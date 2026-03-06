@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v1.6 — NTA（日産東京販売）</title>
+<title>Ams PRO v1.7 — NTA</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -267,6 +267,53 @@ textarea.fi{resize:vertical;min-height:75px}
 .scan-demo-sub{font-size:11px;color:var(--txt3);margin-top:1px}
 
 .s-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+
+/* SIDEBAR TOGGLE / RESPONSIVE v1.7 */
+.sb-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--bdr);border-radius:var(--r8);background:#fff;color:var(--txt2);font-size:18px;line-height:1;flex-shrink:0;transition:all .13s}
+.sb-toggle:hover{background:var(--bg3);color:var(--txt)}
+.sb-backdrop{display:none}
+
+@media (max-width:1024px){
+  html,body{overflow:auto}
+  #app,.app-shell{min-height:100vh;height:100dvh}
+  .sb-toggle{display:inline-flex}
+  .sb{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .22s ease, box-shadow .22s ease;box-shadow:none}
+  .sb.mob-open{transform:translateX(0);box-shadow:2px 0 24px rgba(0,0,0,.18)}
+  .sb-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.32);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:15}
+  .sb-backdrop.on{opacity:1;pointer-events:auto}
+  .main{width:100%}
+  .topbar{height:auto;min-height:50px;padding:10px 14px;flex-wrap:wrap;align-items:center}
+  .tb-title{font-size:14px}
+  .tb-right{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+  .content{padding:14px}
+  .content.no-pad{padding:0}
+  .kpi-grid,.g2{grid-template-columns:1fr 1fr}
+  .kb-cards{max-height:none}
+}
+
+@media (max-width:768px){
+  .kpi-grid,.g2{grid-template-columns:1fr}
+  .st-grp{grid-template-columns:repeat(2,1fr)}
+  .cf-grid{grid-template-columns:1fr}
+  .login-box{width:min(420px,calc(100vw - 24px));padding:24px}
+}
+
+@media (max-width:640px){
+  body{font-size:13px}
+  .sb{width:min(290px,86vw);min-width:min(290px,86vw)}
+  .topbar{padding:10px 12px;gap:8px}
+  .tb-right{width:100%;margin-left:0;justify-content:flex-start}
+  .tog-grp{width:100%;order:3}
+  .tog-btn{flex:1}
+  .content{padding:12px}
+  .tbl-wrap{border-radius:var(--r8)}
+  table{font-size:12px}
+  th,td{padding:8px 9px}
+  .tc{padding:10px;align-items:flex-start;flex-wrap:wrap}
+  .tc-st{min-width:64px}
+  .tc-info{width:calc(100% - 75px)}
+  .btn-lg{width:100%;min-width:0}
+}
 </style>
 </head>
 <body>
@@ -350,6 +397,7 @@ const monthKey=d=>{if(!d)return'';const x=new Date(d);return `${x.getFullYear()}
 const currentMonthKey=monthKey(today);
 const prevMonthKey=(()=>{const d=new Date(today);d.setMonth(d.getMonth()-1);return monthKey(d)})();
 const inRange=(d,from,to)=>{if(!d)return false;const v=String(d);if(from&&v<from)return false;if(to&&v>to)return false;return true;};
+const isCompactViewport=()=>window.matchMedia('(max-width: 1024px)').matches;
 
 function mkTasks(specs){
   return specs.map((sp,i)=>({
@@ -672,6 +720,7 @@ let STATE={
   modal:null,conflictData:null,qrScanned:null,
   listFilter:'all',masterTab:'stages',jobDetailTab:'flow',
   kanbanMode:'scroll', // 'scroll' | 'fit'
+  sidebarOpen:false,
   wipLimits:{...DEFAULT_WIP_LIMITS},
   toast:null,toastTimer:null,
 };
@@ -741,7 +790,7 @@ function loginHTML(){
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
     <div style="font-size:12px;font-weight:700;color:var(--txt3);text-align:center;margin-top:2px">NT Auto Service（日産東京販売グループ）</div>
-    <div class="l-tag">鈑金工程管理システム v1.6</div>
+    <div class="l-tag">鈑金工程管理システム v1.7</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nta.nissan.jp"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -809,9 +858,10 @@ function shellHTML(){
       <button class="tog-btn ${STATE.kanbanMode==='fit'?'on':''}" id="kb-tog-fit">⊞ 一覧表示</button>
     </div>`:'';
   const contentClass=isKanban?'content no-pad':'content';
-  return`<div style="display:flex;height:100vh;overflow:hidden">
-  <aside class="sb">
-    <div class="sb-logo"><div class="brand">Ams PRO</div><div class="ver">NTA 鈑金工程管理 v1.6</div></div>
+  return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
+  <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
+  <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
+    <div class="sb-logo"><div class="brand">Ams PRO</div><div class="ver">NTA 鈑金工程管理 v1.7</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av">${user.name[0]}</div>
@@ -821,6 +871,7 @@ function shellHTML(){
   </aside>
   <div class="main">
     <header class="topbar">
+      <button class="sb-toggle" id="sb-toggle" aria-label="メニュー">☰</button>
       <span class="tb-title">${titles[view]||''}</span>
       ${kanbanToggle}
       <div class="tb-right">${alerts}</div>
@@ -1559,9 +1610,13 @@ function mConflict(){
 function bindAll(){
   const close=()=>setState({modal:null,selectedJob:null,selectedTask:null,conflictData:null,jobDetailTab:'flow'});
 
-  // NAV
-  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setState({view:b.dataset.view,listFilter:'all',masterTab:'stages'})));
-  document.getElementById('logout')?.addEventListener('click',()=>setState({user:null,view:'myview'}));
+  // NAV / SIDEBAR
+  const closeSidebar=()=>{if(isCompactViewport()&&STATE.sidebarOpen)setState({sidebarOpen:false});};
+  document.getElementById('sb-toggle')?.addEventListener('click',()=>setState({sidebarOpen:!STATE.sidebarOpen}));
+  document.getElementById('sb-backdrop')?.addEventListener('click',()=>setState({sidebarOpen:false}));
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setState({view:b.dataset.view,listFilter:'all',masterTab:'stages',sidebarOpen:isCompactViewport()?false:STATE.sidebarOpen})));
+  window.onresize=()=>{if(!isCompactViewport()&&STATE.sidebarOpen)setState({sidebarOpen:false});};
+  document.getElementById('logout')?.addEventListener('click',()=>setState({user:null,view:'myview',sidebarOpen:false}));
 
   // KANBAN TOGGLE
   document.getElementById('kb-tog-scroll')?.addEventListener('click',()=>setState({kanbanMode:'scroll'}));

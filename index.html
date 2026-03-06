@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v1.81 — NTA</title>
+<title>Ams PRO v1.82 — NTA</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -395,14 +395,14 @@ function buildDefaultKpiTargets(){
   for(let i=-1;i<11;i++){
     const d=new Date(base);d.setMonth(base.getMonth()+i);
     const key=monthKey(d);
-    arr.push({month:key,salesTarget:9000000,profitTarget:2200000,countTarget:24});
+    arr.push({month:key,salesTarget:9000,profitTarget:2200,countTarget:24});
   }
   return arr;
 }
 const ST_LABELS={pending:'未着手',ready:'作業可',in_progress:'作業中',completed:'完了',hold:'保留'};
 const ST_COLORS={pending:'#64748b',ready:'#1d4ed8',in_progress:'#b45309',completed:'#047857',hold:'#b91c1c'};
 const PRI_LABELS={urgent:'🔴 緊急',high:'🟠 急ぎ',normal:'⬜ 通常',low:'🟢 余裕'};
-const ROLE_LABELS={admin:'管理者',manager:'工場長',front:'フロント',worker:'作業者',readonly:'閲覧専用'};
+const ROLE_LABELS={admin:'管理者',manager:'工場長',front:'フロント',worker:'作業者',inspector:'検査員',parts:'部品係',process:'工程係',readonly:'閲覧専用'};
 
 // QRスキャンデモ用データ（車検証から読取想定）
 const QR_DEMO_VEHICLES=[
@@ -804,10 +804,15 @@ function canEdit(user,task,job){
   if(!user||user.role==='readonly')return false;
   if(['admin','manager'].includes(user.role))return true;
   if(user.role==='front')return (job?.frontOwnerId||'')===user.id;
-  return user.role==='worker'&&task?.assigneeId===user.id;
+  return ['worker','inspector','parts','process'].includes(user.role) && task?.assigneeId===user.id;
 }
 function canEditFinance(user,job){
-  if(!user||user.role==='readonly'||user.role==='worker')return false;
+  if(!user||user.role==='readonly'||['worker','inspector','parts','process'].includes(user.role))return false;
+  if(['admin','manager'].includes(user.role))return true;
+  return user.role==='front'&&(job?.frontOwnerId||'')===user.id;
+}
+function canEditJob(user,job){
+  if(!user||user.role==='readonly'||['worker','inspector','parts','process'].includes(user.role))return false;
   if(['admin','manager'].includes(user.role))return true;
   return user.role==='front'&&(job?.frontOwnerId||'')===user.id;
 }
@@ -826,8 +831,8 @@ function getKpiTarget(period='currentMonth'){
     ? [...new Set(getPeriodJobs(period).map(j=>monthKey(j.settlementDate||j.promisedDelivery||j.entryDate)).filter(Boolean))]
     : [period==='nextMonth'?(()=>{const d=new Date(today);d.setMonth(d.getMonth()+1);return monthKey(d);})():currentMonthKey];
   return (STATE.kpiTargets||[]).filter(t=>keys.includes(t.month)).reduce((acc,t)=>({
-    salesTarget:acc.salesTarget+(parseInt(t.salesTarget,10)||0),
-    profitTarget:acc.profitTarget+(parseInt(t.profitTarget,10)||0),
+    salesTarget:acc.salesTarget+((parseInt(t.salesTarget,10)||0)*1000),
+    profitTarget:acc.profitTarget+((parseInt(t.profitTarget,10)||0)*1000),
     countTarget:acc.countTarget+(parseInt(t.countTarget,10)||0)
   }),{salesTarget:0,profitTarget:0,countTarget:0});
 }
@@ -875,7 +880,7 @@ function loginHTML(){
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
     <div style="font-size:12px;font-weight:700;color:var(--txt3);text-align:center;margin-top:2px">NT Auto Service</div>
-    <div class="l-tag">鈑金工程管理システム v1.81</div>
+    <div class="l-tag">鈑金工程管理システム v1.82</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -946,7 +951,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">Ams PRO</div><div class="ver">NTA 鈑金工程管理 v1.81</div></div>
+    <div class="sb-logo"><div class="brand">Ams PRO</div><div class="ver">NTA 鈑金工程管理 v1.82</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av">${user.name[0]}</div>
@@ -1094,8 +1099,8 @@ function vDashboard(){
   </div>
   <div class="kpi-grid">
     <div class="kpi bl"><div class="kpi-lbl">${periodLabel}件数</div><div class="kpi-val">${jobs.length}</div><div class="kpi-sub">目標 ${target.countTarget}件 / ${pct(jobs.length,target.countTarget)}%</div></div>
-    ${sm?`<div class="kpi gn"><div class="kpi-lbl">${periodLabel}売上</div><div class="kpi-val">${(tot/10000).toFixed(0)}<span style="font-size:16px">万</span></div><div class="kpi-sub">目標 ${(target.salesTarget/10000).toFixed(0)}万 / ${pct(tot,target.salesTarget)}%</div></div>`:''}
-    ${sm?`<div class="kpi gn"><div class="kpi-lbl">${periodLabel}粗利</div><div class="kpi-val">${(totp/10000).toFixed(0)}<span style="font-size:16px">万</span></div><div class="kpi-sub">目標 ${(target.profitTarget/10000).toFixed(0)}万 / ${pct(totp,target.profitTarget)}%</div></div>`:''}
+    ${sm?`<div class="kpi gn"><div class="kpi-lbl">${periodLabel}売上</div><div class="kpi-val">${(tot/10000).toFixed(0)}<span style="font-size:16px">万</span></div><div class="kpi-sub">目標 ${(target.salesTarget/1000).toFixed(0)}千円 / ${pct(tot,target.salesTarget)}%</div></div>`:''}
+    ${sm?`<div class="kpi gn"><div class="kpi-lbl">${periodLabel}粗利</div><div class="kpi-val">${(totp/10000).toFixed(0)}<span style="font-size:16px">万</span></div><div class="kpi-sub">目標 ${(target.profitTarget/1000).toFixed(0)}千円 / ${pct(totp,target.profitTarget)}%</div></div>`:''}
     <div class="kpi yl"><div class="kpi-lbl">保留中</div><div class="kpi-val">${holds}</div><div class="kpi-sub">要対応</div></div>
     <div class="kpi rd"><div class="kpi-lbl">納期超過</div><div class="kpi-val">${over}</div><div class="kpi-sub">即対応</div></div>
   </div>
@@ -1167,7 +1172,7 @@ function vKanbanScroll(){
       const ass=t?.assigneeId?getUsers().find(u=>u.id===t.assigneeId):null;
       return`<div class="kb-card ${t?.status==='hold'?'hold':''} ${j.priority==='urgent'?'urg':''}" data-ojob="${j.id}">
         <div class="kc-num">${j.jobNumber}</div>
-        <div class="kc-up" style="background:${getUpstreamColor(j.upstream||'自受け')}">${getUpstreamShort(j.upstream||'自受け')}</div><div class="kc-nm">[${getUpstreamShort(j.upstream||'自受け')}] ${j.customerName}</div>
+        <div class="kc-up" style="background:${getUpstreamColor(j.upstream||'自受け')}">${getUpstreamShort(j.upstream||'自受け')}</div><div class="kc-nm">${j.customerName}</div>
         <div class="kc-veh">${j.vehicleName.split('　')[0]}</div>
         ${hr?`<span class="kc-hold">⚠️ ${hr.name}</span>`:''}
         ${sm?`<div class="kc-profit">¥${(getProfit(j)/10000).toFixed(1)}万</div>`:''}
@@ -1486,11 +1491,11 @@ function vMasters(){
       </div>
     </div>`;
   else if(tab==='kpi')body=`
-    <div class="alert info">ℹ️ 月別の売上・粗利・件数目標を設定します。ダッシュボードでは清算日基準の見込みに対する達成率を表示します。</div>
+    <div class="alert info">ℹ️ 月別の売上・粗利・件数目標を設定します。売上・粗利目標は千円単位で入力し、ダッシュボードでは清算日基準の見込みに対する達成率を表示します。</div>
     <div class="card" style="margin-bottom:14px">
       <div class="card-t">月次目標テーブル</div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>月</th><th>売上目標</th><th>粗利目標</th><th>件数目標</th></tr></thead>
+        <thead><tr><th>月</th><th>売上目標（千円）</th><th>粗利目標（千円）</th><th>件数目標</th></tr></thead>
         <tbody>${(STATE.kpiTargets||[]).map((r,idx)=>`<tr>
           <td class="td-m">${r.month}</td>
           <td><input type="number" class="fi" data-kpi-sales="${idx}" value="${r.salesTarget}" style="max-width:180px"></td>
@@ -1512,7 +1517,7 @@ function vMasters(){
         <td style="font-family:var(--mono);font-size:12px">${u.email}</td>
         <td>
           <select class="fi" data-user-role="${idx}" style="max-width:150px">
-            ${['admin','manager','front','worker','readonly'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_LABELS[r]}</option>`).join('')}
+            ${['admin','manager','front','worker','inspector','parts','process','readonly'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_LABELS[r]}</option>`).join('')}
           </select>
         </td>
         <td style="color:var(--grn)">✓ 有効</td></tr>`).join('')}
@@ -1674,6 +1679,7 @@ function mJobDetail(){
   const {selectedJob:j,user}=STATE;if(!j)return'';
   const sm=canSeeMoney(user);const tab=STATE.jobDetailTab||'flow';
   const canEditThis=canEditFinance(user,j);
+  const canEditJobThis=canEditJob(user,j);
   const flowRows=j.tasks.map((t,i)=>{
     const st=STAGES.find(s=>s.id===t.stageId);
     const ass=t.assigneeId?getUserById(t.assigneeId):null;
@@ -1696,6 +1702,19 @@ function mJobDetail(){
     ['約束納車日',fmtD(j.promisedDelivery)],['清算予定日',fmtD(j.settlementDate)],
     ['社内締切',fmtD(j.internalDeadline)],['備考',j.note||'—'],['version',`v${j.version}`]].map(([k,v])=>`
     <div class="pr-row"><span class="pr-lbl">${k}</span><span style="font-weight:600">${v}</span></div>`).join('');
+  const infoEdit=canEditJobThis?`
+    <div class="fg"><label class="flbl">顧客名</label><input class="fi" id="ji-customer" value="${j.customerName||''}"></div>
+    <div class="fg"><label class="flbl">元受け</label><select class="fi" id="ji-upstream">${getUpstreamOptions().map(v=>`<option value="${v}" ${v===(j.upstream||'自受け')?'selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="fg"><label class="flbl">車両</label><input class="fi" id="ji-vehicle" value="${j.vehicleName||''}"></div>
+    <div class="fg"><label class="flbl">優先度</label><select class="fi" id="ji-priority">${Object.entries(PRI_LABELS).map(([k,v])=>`<option value="${k}" ${j.priority===k?'selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="fg"><label class="flbl">入庫日</label><input type="date" class="fi" id="ji-entry" value="${j.entryDate||''}"></div>
+    <div class="fg"><label class="flbl">約束納車日</label><input type="date" class="fi" id="ji-promised" value="${j.promisedDelivery||''}"></div>
+    <div class="fg"><label class="flbl">清算予定日</label><input type="date" class="fi" id="ji-settlement" value="${j.settlementDate||j.promisedDelivery||''}"></div>
+    <div class="fg"><label class="flbl">社内締切</label><input type="date" class="fi" id="ji-deadline" value="${j.internalDeadline||''}"></div>
+    <div class="fg"><label class="flbl">担当フロント</label><select class="fi" id="ji-front">${getUsers().filter(u=>['admin','manager','front'].includes(u.role) && (user.role!=='front' || u.id===user.id)).map(u=>`<option value="${u.id}" ${j.frontOwnerId===u.id?'selected':''}>${u.name}（${ROLE_LABELS[u.role]}）</option>`).join('')}</select></div>
+    <div class="fg"><label class="flbl">備考</label><textarea class="fi" id="ji-note">${j.note||''}</textarea></div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" id="ji-save">案件情報を保存</button></div>
+  `:'';
   const p=getProfit(j);
   const finRead=[['見込み売上',j.estimateAmount,''],['見込み部品原価',-j.estimatePartsCost,'neg'],
     ['見込み工賃',-j.estimateLaborCost,'neg'],['── 見込み粗利',p,p>=0?'pos':'neg'],
@@ -1732,7 +1751,7 @@ function mJobDetail(){
     </div>
     <div class="mo-body">
       ${tab==='flow'?`<div class="sf">${flowRows}</div>`:''}
-      ${tab==='info'?info:''}
+      ${tab==='info'?`${info}${infoEdit}`:''}
       ${tab==='fin'&&sm?`${finRead}${finEdit}`:''}
       ${tab==='fin'&&!sm?'<div class="alert danger">⚠️ 権限がありません</div>':''}
     </div>
@@ -2054,6 +2073,26 @@ function bindAll(){
         note:document.getElementById('jf-note')?.value||''
       });
       showToast('財務情報を更新しました');
+    });
+    document.getElementById('ji-save')?.addEventListener('click',()=>{
+      const j2=STATE.selectedJob;if(!j2)return;
+      if(!canEditJob(STATE.user,j2)){showToast('案件情報を変更する権限がありません','e');return;}
+      const promised=document.getElementById('ji-promised')?.value||j2.promisedDelivery;
+      const settlement=document.getElementById('ji-settlement')?.value||j2.settlementDate||promised;
+      const deadline=document.getElementById('ji-deadline')?.value||j2.internalDeadline||addD(promised,-1);
+      updateJob(j2.id,{
+        customerName:document.getElementById('ji-customer')?.value?.trim()||j2.customerName,
+        upstream:document.getElementById('ji-upstream')?.value||j2.upstream,
+        vehicleName:document.getElementById('ji-vehicle')?.value?.trim()||j2.vehicleName,
+        priority:document.getElementById('ji-priority')?.value||j2.priority,
+        entryDate:document.getElementById('ji-entry')?.value||j2.entryDate,
+        promisedDelivery:promised,
+        settlementDate:settlement,
+        internalDeadline:deadline,
+        frontOwnerId:(STATE.user?.role==='front'?STATE.user.id:(document.getElementById('ji-front')?.value||j2.frontOwnerId)),
+        note:document.getElementById('ji-note')?.value||''
+      });
+      showToast('案件情報を更新しました');
     });
   }
 

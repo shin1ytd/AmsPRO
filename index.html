@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v3.2</title>
+<title>Ams PRO v3.2.1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.2</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.2.1</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -2931,7 +2931,49 @@ render();
       const rows=[...g.pickups,...g.deliveries,...g.unresolved].sort((a,b)=>{
         return String(a.j.upstream||'').localeCompare(String(b.j.upstream||''),'ja') || String(a.j.customerName||'').localeCompare(String(b.j.customerName||''),'ja');
       });
-      const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>引取納車リスト</title><style>body{font-family:sans-serif;padding:24px;font-size:12px}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f3f4f6}</style></head><body><h1>引取納車リスト</h1><div>${new Date().toLocaleString('ja-JP')}</div><table><thead><tr><th>元請け</th><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>登録番号</th><th>予定日</th><th>状態</th></tr></thead><tbody>${rows.map(({j,t})=>`<tr><td>${j.upstream||'自受け'}</td><td>${STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?'引取':'納車'}</td><td>${j.jobNumber}</td><td>${j.customerName}</td><td>${vehShort(j.vehicleName)}</td><td>${j.plateNumber||plateOf(j.vehicleName)}</td><td>${fmtD(STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?j.plannedPickupDate:j.plannedDeliveryDate)}</td><td>${displayStatus(t,j)}</td></tr>`).join('')}</tbody></table></body></html>`;
+      const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>引取納車リスト</title><style>body{font-family:sans-serif;padding:24px;font-size:12px}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f3f4f6}</style></head><body><h1>引取納車リスト</h1><div>${new Date().toLocaleString('ja-JP')}</div><table><thead><tr><th>元請け</th><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>登録番号</th><th>予定日</th><th>状態</th></tr></thead><tbody>${rows.map(({j,t})=>`<tr><td>${j.upstream||'自受け'}</td><td>${STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?'引取':'納車'}</td><td>${j.jobNumber}</td><td>${j.customerName}</td><td>${vehShort(j.vehicleName)}</td><td>${j.plateNumber||plateOf(j.vehicleName)}</td><td>${fmtD(STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?j.plannedPickupDate:j.plannedDeliveryDate)}</td><td>${displayStatus(t,j)}</td></tr>`).join('')}</tbody></table>
+<script>
+// v3.2.1 patch: BP / HP カンバンの「ボード / 一覧」切替を確実化
+(function(){
+  function syncKanbanToggleUI(){
+    var scrollBtn = document.getElementById('kb-tog-scroll');
+    var fitBtn = document.getElementById('kb-tog-fit');
+    if(!scrollBtn || !fitBtn || !window.STATE) return;
+    scrollBtn.classList.toggle('on', STATE.kanbanMode === 'scroll');
+    fitBtn.classList.toggle('on', STATE.kanbanMode === 'fit');
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-kbmode]');
+    if(!btn || !window.STATE || typeof window.setState !== 'function') return;
+    var mode = btn.getAttribute('data-kbmode');
+    if(mode !== 'scroll' && mode !== 'fit') return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(STATE.kanbanMode !== mode){
+      setState({kanbanMode: mode});
+      setTimeout(syncKanbanToggleUI, 0);
+    }else{
+      syncKanbanToggleUI();
+    }
+  }, true);
+
+  var _render = window.render;
+  if(typeof _render === 'function'){
+    window.render = function(){
+      var r = _render.apply(this, arguments);
+      setTimeout(syncKanbanToggleUI, 0);
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(syncKanbanToggleUI, 0);
+  });
+})();
+</script>
+
+</body></html>`;
       const w=window.open('','_blank'); if(!w) return; w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>w.print(),250);
     });
 
@@ -2986,8 +3028,50 @@ render();
   };
 
   normalizeMastersAndJobs();
-  document.title='Ams PRO v3.2';
+  document.title='Ams PRO v3.2.1';
   render();
+})();
+</script>
+
+
+<script>
+// v3.2.1 patch: BP / HP カンバンの「ボード / 一覧」切替を確実化
+(function(){
+  function syncKanbanToggleUI(){
+    var scrollBtn = document.getElementById('kb-tog-scroll');
+    var fitBtn = document.getElementById('kb-tog-fit');
+    if(!scrollBtn || !fitBtn || !window.STATE) return;
+    scrollBtn.classList.toggle('on', STATE.kanbanMode === 'scroll');
+    fitBtn.classList.toggle('on', STATE.kanbanMode === 'fit');
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-kbmode]');
+    if(!btn || !window.STATE || typeof window.setState !== 'function') return;
+    var mode = btn.getAttribute('data-kbmode');
+    if(mode !== 'scroll' && mode !== 'fit') return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(STATE.kanbanMode !== mode){
+      setState({kanbanMode: mode});
+      setTimeout(syncKanbanToggleUI, 0);
+    }else{
+      syncKanbanToggleUI();
+    }
+  }, true);
+
+  var _render = window.render;
+  if(typeof _render === 'function'){
+    window.render = function(){
+      var r = _render.apply(this, arguments);
+      setTimeout(syncKanbanToggleUI, 0);
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(syncKanbanToggleUI, 0);
+  });
 })();
 </script>
 

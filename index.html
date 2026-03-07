@@ -871,7 +871,7 @@ function loginHTML(){
   const driverUsers=allUsers.filter(u=>u.role==='driver');
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
-    <div class="l-tag">自動車工程管理システム v2.0</div>
+    <div class="l-tag">NTA工程管理システム v3.0</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v2.0</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">NTA工程管理 v3.0</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>

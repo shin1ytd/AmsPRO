@@ -2300,5 +2300,670 @@ render();
 })();
 </script>
 
+
+<style id="v3-patch-style">
+/* v3 patch styles */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.info-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.info-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.wide-grid{display:grid;grid-template-columns:2fr 1.1fr;gap:14px}
+.dashboard-wide .kpi-grid{grid-template-columns:repeat(6,1fr)}
+.dash-panel{background:#fff;border:1px solid var(--bdr);border-radius:var(--r12);padding:14px;box-shadow:var(--sh2)}
+.dash-panel h3{font-size:12px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.progress-row{display:grid;grid-template-columns:130px 1fr 58px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--bdr)}
+.progress-row:last-child{border-bottom:none}
+.progress-bar{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;border-radius:999px}
+.kb-card .kc-meta2{font-size:9.5px;color:var(--txt3);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px}
+.kb-drop{min-height:60px}
+.kb-card.dragging{opacity:.45}
+.kb-col.drag-over{outline:2px dashed var(--acc)}
+.transfer-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 0 14px;gap:10px;flex-wrap:wrap}
+.transfer-sections{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;padding:14px}
+.transfer-sections .kb-col{min-width:0;max-width:none}
+.kc-plate{font-family:var(--mono);font-size:10px;color:var(--txt2);font-weight:700}
+.inline-help{font-size:11px;color:var(--txt3);margin-top:4px}
+.master-picker{display:grid;grid-template-columns:1.2fr .8fr;gap:10px}
+.lookup-box{padding:10px;border:1px solid var(--bdr);background:var(--sur2);border-radius:var(--r8);margin-bottom:12px}
+.lookup-suggest{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.lookup-chip{padding:4px 8px;border-radius:999px;border:1px solid var(--bdr);background:#fff;font-size:11px;cursor:pointer}
+.lookup-chip:hover{border-color:var(--acc);color:var(--acc)}
+.quick-date-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.quick-date-btn{padding:5px 10px;border-radius:999px;border:1px solid var(--bdr);background:#fff;font-size:11px;cursor:pointer}
+.quick-date-btn:hover{border-color:var(--acc);color:var(--acc)}
+.transfer-type{display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:800;background:#eef2ff;color:var(--acc2)}
+.detail-section{border:1px solid var(--bdr);border-radius:var(--r10);padding:12px;background:#fff}
+.detail-section h4{font-size:12px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.detail-pair{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr)}
+.detail-pair:last-child{border-bottom:none}
+.mono-small{font-family:var(--mono);font-size:12px}
+@media (max-width:1100px){
+  .dashboard-wide .kpi-grid,.transfer-sections,.wide-grid,.info-grid-4,.info-grid-3,.plan-grid,.master-picker{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .dashboard-wide .kpi-grid,.transfer-sections,.wide-grid,.info-grid-4,.info-grid-3,.plan-grid,.master-picker{grid-template-columns:1fr}
+}
+</style>
+<script id="v3-patch-script">
+(function(){
+  const origBindAll = bindAll;
+  function plateOf(v){
+    if(!v) return '—';
+    const m = String(v).match(/　(.+)$/);
+    return m ? m[1] : (String(v).split(' ').slice(-4).join(' ') || String(v));
+  }
+  function vehShort(v){
+    return String(v||'').split('　')[0];
+  }
+  function sameDate(a,b){
+    return String(a||'')===String(b||'');
+  }
+  function taskByCode(job,code){
+    return job.tasks.find(t=>{ const s=STAGES.find(x=>x.id===t.stageId); return s && s.code===code; });
+  }
+  function displayStatus(task, job){
+    if(!task) return '—';
+    const stage = STAGES.find(s=>s.id===task.stageId);
+    if(stage && ['pickup','delivery'].includes(stage.code)){
+      if(task.status==='completed') return '納引完了';
+      if(task.status==='in_progress') return '納引中';
+      if(task.status==='hold') return '保留';
+      return '納引待ち';
+    }
+    if(task.status==='hold') return '保留';
+    if(task.status==='completed') return '完了';
+    if(['pending','ready'].includes(task.status)) return '未着手';
+    if(task.status==='in_progress') return '作業中';
+    return ST_LABELS[task.status]||task.status;
+  }
+  function firstWorkerId(job){
+    const t = job.tasks.find(t=> {
+      const u=getUserById(t.assigneeId);
+      return u && ['worker','inspector','driver'].includes(u.role);
+    });
+    return t ? t.assigneeId : null;
+  }
+  function normalizeMastersAndJobs(){
+    ST_LABELS.ready='未着手';
+    ST_LABELS.pending='未着手';
+    const q = STAGES.find(s=>s.code==='quality_check' && s.div==='hp');
+    if(q) q.name='できばえ確認';
+    if(!STATE.customers) STATE.customers=[];
+    if(!STATE.vehicles) STATE.vehicles=[];
+    const custMap = new Map(STATE.customers.map(c=>[c.id,c]));
+    const vehMap = new Map(STATE.vehicles.map(v=>[v.id,v]));
+    STATE.jobs = (STATE.jobs||[]).map((j,idx)=>{
+      const customerId = j.customerId || ('c_'+btoa(unescape(encodeURIComponent(j.customerName||('顧客'+idx)))).replace(/=/g,'').slice(0,16));
+      if(!custMap.has(customerId)){
+        custMap.set(customerId,{id:customerId,name:j.customerName||'',phone:j.phone||'',memo:'',upstream:j.upstream||'自受け'});
+      }
+      const vehicleId = j.vehicleId || ('v_'+btoa(unescape(encodeURIComponent((j.vehicleName||'車両')+'_'+customerId))).replace(/=/g,'').slice(0,16));
+      if(!vehMap.has(vehicleId)){
+        vehMap.set(vehicleId,{id:vehicleId,customerId,displayName:vehShort(j.vehicleName),plate:plateOf(j.vehicleName),fullName:j.vehicleName||'',memo:''});
+      }
+      const promised = j.promisedDelivery || j.entryDate || T;
+      const pickupTask = taskByCode(j,'pickup');
+      const deliveryTask = taskByCode(j,'delivery');
+      if(pickupTask && !pickupTask.transferType) pickupTask.transferType='pickup';
+      if(deliveryTask && !deliveryTask.transferType) deliveryTask.transferType='delivery';
+      return {
+        ...j,
+        customerId,
+        vehicleId,
+        plateNumber:j.plateNumber||plateOf(j.vehicleName),
+        plannedPickupDate:j.plannedPickupDate || (pickupTask ? (j.entryDate || promised) : ''),
+        plannedWorkDate:j.plannedWorkDate || j.entryDate || T,
+        plannedCompleteDate:j.plannedCompleteDate || j.internalDeadline || promised,
+        plannedDeliveryDate:j.plannedDeliveryDate || promised,
+        assignedWorkerId:j.assignedWorkerId || firstWorkerId(j) || '',
+        completionDayHold:j.completionDayHold!==false,
+      };
+    });
+    STATE.customers=[...custMap.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ja'));
+    STATE.vehicles=[...vehMap.values()].sort((a,b)=>String(a.fullName||a.displayName).localeCompare(String(b.fullName||b.displayName),'ja'));
+  }
+  function jobsForWorker(user){
+    const divMatch = user.div==='all' ? ()=>true : j=>j.div===user.div;
+    const active=[], unassigned=[], upcoming=[];
+    (STATE.jobs||[]).forEach(j=>{
+      if(!divMatch(j)) return;
+      j.tasks.forEach(t=>{
+        const stage=STAGES.find(s=>s.id===t.stageId);
+        const open = ['pending','ready','in_progress','hold'].includes(t.status);
+        if(!open) return;
+        if(t.assigneeId===user.id) active.push({j,t});
+        else if(!t.assigneeId && ['worker','inspector','driver'].includes(user.role) && stage && !['reservation','checkin','estimate','agreement','billing'].includes(stage.code)){
+          unassigned.push({j,t});
+        } else if(t.assigneeId===user.id && ['pending','ready'].includes(t.status)){
+          upcoming.push({j,t});
+        }
+      });
+    });
+    return {active,unassigned,upcoming};
+  }
+  function flowDisplayTask(job, div){
+    const relevant = job.tasks.filter(t=>STAGES.find(s=>s.id===t.stageId && s.div===div));
+    const hold = relevant.find(t=>t.status==='hold');
+    if(hold) return hold;
+    const active = relevant.find(t=>t.status==='in_progress');
+    if(active) return active;
+    const firstOpen = relevant.find(t=>['pending','ready'].includes(t.status));
+    if(firstOpen) return firstOpen;
+    const todayCompleted = [...relevant].reverse().find(t=>t.status==='completed' && t.completedAt && sameDate(isoDate(t.completedAt), T));
+    return todayCompleted || relevant[relevant.length-1];
+  }
+  function transferBucketJobs(kind){
+    return (STATE.jobs||[]).filter(j=>{
+      const task = taskByCode(j,kind);
+      if(!task) return false;
+      if(kind==='delivery'){
+        const pickup = taskByCode(j,'pickup');
+        if(pickup && pickup.status!=='completed') return false;
+      }
+      return true;
+    });
+  }
+  function transferGroups(){
+    const pickups = [], deliveries = [], unresolved=[], done=[];
+    transferBucketJobs('pickup').forEach(j=>{
+      const t=taskByCode(j,'pickup');
+      const planned=j.plannedPickupDate||'';
+      if(t.status==='completed' && sameDate(isoDate(t.completedAt),T)) done.push({j,t});
+      else if(planned===T || (planned && planned<T && t.status!=='completed')) pickups.push({j,t});
+      else if(!planned && t.status!=='completed') unresolved.push({j,t});
+    });
+    transferBucketJobs('delivery').forEach(j=>{
+      const t=taskByCode(j,'delivery');
+      const planned=j.plannedDeliveryDate||'';
+      if(t.status==='completed' && sameDate(isoDate(t.completedAt),T)) done.push({j,t});
+      else if(planned===T || (planned && planned<T && t.status!=='completed')) deliveries.push({j,t});
+      else if(!planned && t.status!=='completed') unresolved.push({j,t});
+    });
+    return {pickups, deliveries, unresolved, done};
+  }
+  function cardHtml(j,t, opts={}){
+    const st=STAGES.find(s=>s.id===t.stageId);
+    const dd=diffD(j.promisedDelivery||j.plannedDeliveryDate);
+    const dcls=dd<0?'over':dd<=2?'warn':'safe';
+    const dlbl=dd<0?`${Math.abs(dd)}日超過`:dd===0?'本日':`残${dd}日`;
+    const ass = t.assigneeId ? getUserById(t.assigneeId)?.name || '' : (j.assignedWorkerId ? getUserById(j.assignedWorkerId)?.name || '' : '担当者未確定');
+    const plate = j.plateNumber || plateOf(j.vehicleName);
+    const drag = opts.draggable ? `draggable="true" data-dragjob="${j.id}" data-dragtask="${t.id}"` : '';
+    return `<div class="kb-card ${j.div==='hp'?'hp-card':'bp-card'} ${opts.extraClass||''}" ${drag} data-otask="${j.id}__${t.id}">
+      <div class="kc-num">${divTag(j.div)} ${j.jobNumber} ${upstreamBadge(j.upstream||'自受け')}</div>
+      <div class="kc-nm">${j.customerName}</div>
+      <div class="kc-veh">${vehShort(j.vehicleName)}</div>
+      <div class="kc-meta2"><span class="kc-plate"># ${plate}</span><span>${st?.name||'—'}</span></div>
+      <div class="kc-meta2"><span>${ass||'担当者未確定'}</span><span>${displayStatus(t,j)}</span></div>
+      <div class="kc-ft"><span class="kc-ass">${fmtD(j.plannedWorkDate||j.entryDate)} / ${fmtD(j.plannedDeliveryDate||j.promisedDelivery)}</span><span class="kc-day ${dcls}">${dlbl}</span></div>
+    </div>`;
+  }
+
+  vMyView = function(){
+    const {user}=STATE;
+    const {active,unassigned}=jobsForWorker(user);
+    const dueToday=(STATE.jobs||[]).filter(j=>sameDate(j.plannedDeliveryDate||j.promisedDelivery,T));
+    const section=(title,rows,badge,empty)=>`<div style="margin-bottom:18px">
+      <div style="font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:9px">${title} <span class="bx bx-b">${badge}</span></div>
+      ${rows.length?`<div style="display:flex;flex-direction:column;gap:7px">${rows.map(({j,t})=>`
+        <div class="tc" data-otask="${j.id}__${t.id}">
+          <div class="tc-st"><div class="tc-st-nm">${STAGES.find(s=>s.id===t.stageId)?.name||'—'}</div><div style="margin-top:4px;font-size:10px;padding:2px 5px;border-radius:3px;background:rgba(26,86,219,.08);color:var(--acc2);font-weight:700;display:inline-block">${displayStatus(t,j)}</div></div>
+          <div class="tc-info">
+            <div class="tc-job">${divTag(j.div)} ${j.jobNumber} ${j.customerName}</div>
+            <div class="tc-veh">${vehShort(j.vehicleName)} / ${j.plateNumber||plateOf(j.vehicleName)} / ${j.upstream||'自受け'}</div>
+            <div class="tc-eta">予定: 引取 ${fmtD(j.plannedPickupDate)} / 作業 ${fmtD(j.plannedWorkDate)} / 完了 ${fmtD(j.plannedCompleteDate)} / 納車 ${fmtD(j.plannedDeliveryDate||j.promisedDelivery)}</div>
+          </div>
+        </div>`).join('')}</div>`:`<div class="alert info">${empty}</div>`}
+    </div>`;
+    return `${section('🔨 自分の作業予定',active,active.length,'担当中・予定中の作業はありません')}
+            ${section('🟡 担当者未確定',unassigned,unassigned.length,'未確定案件はありません')}
+            ${dueToday.length?`<div><div style="font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:9px">🚚 本日納引・納車</div><div style="display:flex;flex-direction:column;gap:6px">${dueToday.map(j=>`<div class="tc" data-ojob="${j.id}"><div class="tc-st"><div class="tc-st-nm">本日</div></div><div class="tc-info"><div class="tc-job">${divTag(j.div)} ${j.jobNumber} ${j.customerName}</div><div class="tc-veh">${vehShort(j.vehicleName)} / ${j.plateNumber||plateOf(j.vehicleName)} / ${j.upstream||'自受け'}</div></div></div>`).join('')}</div></div>`:''}`;
+  };
+
+  vDashboard = function(div){
+    const {user}=STATE; const sm=canSeeMoney(user);
+    const period=STATE.dashboardPeriod||'currentMonth';
+    const jobs=getPeriodJobs(period,div);
+    const target=getKpiTarget(period,div);
+    const sales=jobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
+    const profit=jobs.reduce((s,j)=>s+getProfit(j),0);
+    const count=jobs.length;
+    const overdue=jobs.filter(j=>diffD(j.plannedDeliveryDate||j.promisedDelivery)<0).length;
+    const today=jobs.filter(j=>sameDate(j.plannedDeliveryDate||j.promisedDelivery,T)).length;
+    const unassigned=jobs.filter(j=>!j.assignedWorkerId).length;
+    const progressStages=getStagesForDiv(div);
+    const rows=progressStages.map(s=>{
+      const n=jobs.filter(j=>{
+        const t=flowDisplayTask(j,div);
+        return t && t.stageId===s.id;
+      }).length;
+      return {name:s.name, count:n};
+    }).filter(r=>r.count>0);
+    const maxCount=Math.max(1,...rows.map(r=>r.count),1);
+    const upstreamAgg={};
+    jobs.forEach(j=>upstreamAgg[j.upstream||'自受け']=(upstreamAgg[j.upstream||'自受け']||0)+1);
+    const topUp=Object.entries(upstreamAgg).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const pct=(v,t)=>t?Math.round(v/t*100):0;
+    const color=div==='hp'?'var(--hp)':'var(--bp)';
+    return `<div class="dashboard-wide">
+      <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="fchip ${period==='currentMonth'?'on':''}" data-dash-period="currentMonth">当月</button>
+        <button class="fchip ${period==='nextMonth'?'on':''}" data-dash-period="nextMonth">翌月</button>
+        <button class="fchip ${period==='all'?'on':''}" data-dash-period="all">全て</button>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi ${div==='hp'?'hp-c':'bp-c'}"><div class="kpi-lbl">総案件</div><div class="kpi-val">${count}</div><div class="kpi-sub">${div==='hp'?'HP':'BP'} ダッシュボード</div></div>
+        <div class="kpi gn"><div class="kpi-lbl">本日納期</div><div class="kpi-val">${today}</div><div class="kpi-sub">当日着地確認</div></div>
+        <div class="kpi yl"><div class="kpi-lbl">納期超過</div><div class="kpi-val">${overdue}</div><div class="kpi-sub">遅延案件</div></div>
+        <div class="kpi rd"><div class="kpi-lbl">担当未確定</div><div class="kpi-val">${unassigned}</div><div class="kpi-sub">見落とし防止</div></div>
+        ${sm?`<div class="kpi gn"><div class="kpi-lbl">売上見込</div><div class="kpi-val">${Math.round(sales/10000)}<span style="font-size:15px">万</span></div><div class="kpi-sub">目標比 ${pct(sales,target.salesTarget)}%</div></div>
+               <div class="kpi gn"><div class="kpi-lbl">粗利見込</div><div class="kpi-val">${Math.round(profit/10000)}<span style="font-size:15px">万</span></div><div class="kpi-sub">目標比 ${pct(profit,target.profitTarget)}%</div></div>`:
+              `<div class="kpi bl"><div class="kpi-lbl">進捗率</div><div class="kpi-val">${pct(count,target.countTarget)}%</div><div class="kpi-sub">件数目標比</div></div>
+               <div class="kpi bl"><div class="kpi-lbl">件数目標</div><div class="kpi-val">${target.countTarget||0}</div><div class="kpi-sub">目標件数</div></div>`}
+      </div>
+      <div class="wide-grid">
+        <div class="dash-panel">
+          <h3>工程進捗</h3>
+          ${(rows.length?rows:progressStages.slice(0,6).map(s=>({name:s.name,count:0}))).map(r=>`<div class="progress-row">
+            <div>${r.name}</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${(r.count/maxCount)*100}%;background:${color}"></div></div>
+            <div class="mono-small">${r.count}件</div>
+          </div>`).join('')}
+        </div>
+        <div class="dash-panel">
+          <h3>元請け構成</h3>
+          ${topUp.length?topUp.map(([name,n])=>`<div class="progress-row">
+            <div>${name}</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${(n/Math.max(...topUp.map(x=>x[1])))*100}%;background:${getUpstreamColor(name)}"></div></div>
+            <div class="mono-small">${n}</div>
+          </div>`).join(''):'<div style="color:var(--txt3)">データなし</div>'}
+        </div>
+      </div>
+      <div class="dash-panel" style="margin-top:14px">
+        <h3>本日・近日中の要注意案件</h3>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${jobs.filter(j=>diffD(j.plannedDeliveryDate||j.promisedDelivery)<=2).sort((a,b)=>diffD(a.plannedDeliveryDate||a.promisedDelivery)-diffD(b.plannedDeliveryDate||b.promisedDelivery)).slice(0,8).map(j=>`
+            <div class="tc" data-ojob="${j.id}">
+              <div class="tc-st"><div class="tc-st-nm">${fmtD(j.plannedDeliveryDate||j.promisedDelivery)}</div></div>
+              <div class="tc-info"><div class="tc-job">${j.jobNumber} ${j.customerName}</div><div class="tc-veh">${j.upstream||'自受け'} / ${vehShort(j.vehicleName)} / ${j.plateNumber||plateOf(j.vehicleName)} / ${getUserById(j.assignedWorkerId)?.name || '担当者未確定'}</div></div>
+              <span class="kc-day ${diffD(j.plannedDeliveryDate||j.promisedDelivery)<0?'over':diffD(j.plannedDeliveryDate||j.promisedDelivery)===0?'warn':'safe'}">${diffD(j.plannedDeliveryDate||j.promisedDelivery)<0?`${Math.abs(diffD(j.plannedDeliveryDate||j.promisedDelivery))}日超過`:diffD(j.plannedDeliveryDate||j.promisedDelivery)===0?'本日':`残${diffD(j.plannedDeliveryDate||j.promisedDelivery)}日`}</span>
+            </div>`).join('') || '<div style="color:var(--txt3)">対象案件なし</div>'}
+        </div>
+      </div>
+    </div>`;
+  };
+
+  vKanbanTransfer = function(){
+    const g=transferGroups();
+    const col=(title,key,rows)=>`<div class="kb-col"><div class="kb-hdr">${title}<span class="kb-cnt">${rows.length}</span></div><div class="kb-cards kb-drop" data-transfer-col="${key}">${rows.length?rows.map(x=>cardHtml(x.j,x.t,{draggable:true})).join(''):'<div style="text-align:center;padding:18px;color:var(--txt3);font-size:12px">なし</div>'}</div></div>`;
+    return `<div>
+      <div class="transfer-toolbar">
+        <div style="font-size:12px;color:var(--txt2)">引取・納車は予定日ベースで表示。未完了案件は当日を過ぎても残ります。引取未完了の車両は納車側に出しません。</div>
+        <button class="btn btn-p btn-sm" id="transfer-print">🖨 印刷</button>
+      </div>
+      <div class="transfer-sections">
+        ${col('🚗 引取予定（当日・持越）','pickup',g.pickups)}
+        ${col('📦 納車予定（当日・持越）','delivery',g.deliveries)}
+        ${col('🟡 未定案件 / 見落とし防止','unresolved',g.unresolved)}
+        ${col('✅ 本日完了','done',g.done)}
+      </div>
+    </div>`;
+  };
+
+  vKanbanDiv = function(div){
+    const stages=getStagesForDiv(div);
+    const jobs=(STATE.jobs||[]).filter(j=>j.div===div);
+    const cols=stages.map(s=>{
+      const rows=jobs.map(j=>{
+        const t=flowDisplayTask(j,div);
+        if(!t) return null;
+        const showCompletedToday = t.stageId===s.id && t.status==='completed' && t.completedAt && sameDate(isoDate(t.completedAt),T);
+        if(t.stageId!==s.id && !showCompletedToday) return null;
+        return {j,t};
+      }).filter(Boolean);
+      const wip=getWipLimits(div)[s.id];
+      return `<div class="kb-col" data-stage-drop="${div}__${s.id}">
+        <div class="kb-hdr ${wip&&rows.length>wip?'wip-over':''}">${s.name}<span class="kb-cnt ${wip&&rows.length>wip?'over':''}">${rows.length}${wip?` / ${wip}`:''}</span></div>
+        <div class="kb-cards kb-drop">${rows.length?rows.map(x=>cardHtml(x.j,x.t,{draggable:true})).join(''):'<div style="text-align:center;padding:16px;color:var(--txt3);font-size:12px">なし</div>'}</div>
+      </div>`;
+    }).join('');
+    return `<div class="kb-scroll-wrap">${cols}</div>`;
+  };
+
+  mJobDetail = function(){
+    const {selectedJob:j,user}=STATE; if(!j) return '';
+    const sm=canSeeMoney(user), canEditThis=canEditFinance(user,j), canEditJobThis=canEditJob(user,j);
+    const flowRows=j.tasks.map((t,i)=>{
+      const st=STAGES.find(s=>s.id===t.stageId); const ass=t.assigneeId?getUserById(t.assigneeId):null;
+      return `<div class="sf-row ${['in_progress','hold'].includes(t.status)?'cur':''} ${t.status==='completed'?'done':''} ${t.status==='hold'?'hld':''}" ${canEdit(user,t,j)?`data-otask="${j.id}__${t.id}"`:''}>
+        <div class="sf-num ${t.status==='completed'?'d':['in_progress','hold'].includes(t.status)?'c':'p'}">${t.status==='completed'?'✓':i+1}</div>
+        <div class="sf-nm">${st?.name||'—'}<div class="inline-help">${displayStatus(t,j)} / ${ass?ass.name:'担当者未確定'} / ETA ${fmtD(t.finishEta)}</div></div>
+      </div>`;
+    }).join('');
+    const p=getProfit(j);
+    return `<div class="mbk" id="mbk"><div class="mo" style="max-width:960px">
+      <div class="mo-hdr"><div><div class="mo-ttl">${divTag(j.div)} ${j.jobNumber} — ${j.customerName}</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">${j.upstream||'自受け'} / ${vehShort(j.vehicleName)} / ${j.plateNumber||plateOf(j.vehicleName)}</div></div><button class="mo-x" id="mc-x">×</button></div>
+      <div class="mo-body">
+        <div class="wide-grid">
+          <div class="detail-section">
+            <h4>工程フロー</h4>
+            <div class="sf">${flowRows}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="detail-section">
+              <h4>基本情報</h4>
+              <div class="detail-pair"><div>元請け</div><div>${upstreamBadge(j.upstream||'自受け')}</div></div>
+              <div class="detail-pair"><div>車両</div><div>${j.vehicleName}</div></div>
+              <div class="detail-pair"><div>登録番号</div><div class="mono-small">${j.plateNumber||plateOf(j.vehicleName)}</div></div>
+              <div class="detail-pair"><div>担当作業者</div><div>${getUserById(j.assignedWorkerId)?.name || '担当者未確定'}</div></div>
+              <div class="detail-pair"><div>備考</div><div>${j.note||'—'}</div></div>
+            </div>
+            <div class="detail-section">
+              <h4>予定・日程</h4>
+              <div class="detail-pair"><div>引取予定</div><div>${fmtD(j.plannedPickupDate)}</div></div>
+              <div class="detail-pair"><div>作業予定</div><div>${fmtD(j.plannedWorkDate)}</div></div>
+              <div class="detail-pair"><div>完了予定</div><div>${fmtD(j.plannedCompleteDate)}</div></div>
+              <div class="detail-pair"><div>納車予定</div><div>${fmtD(j.plannedDeliveryDate||j.promisedDelivery)}</div></div>
+            </div>
+            ${sm?`<div class="detail-section">
+              <h4>財務情報</h4>
+              <div class="detail-pair"><div>売上見込</div><div class="mono-small">¥${(j.estimateAmount||0).toLocaleString()}</div></div>
+              <div class="detail-pair"><div>部品原価</div><div class="mono-small">¥${(j.estimatePartsCost||0).toLocaleString()}</div></div>
+              <div class="detail-pair"><div>工賃原価</div><div class="mono-small">¥${(j.estimateLaborCost||0).toLocaleString()}</div></div>
+              <div class="detail-pair"><div>粗利見込</div><div class="mono-small ${p>=0?'pos':'neg'}">¥${Math.abs(p).toLocaleString()}</div></div>
+            </div>`:''}
+          </div>
+        </div>
+        ${(canEditJobThis||canEditThis)?`<div class="detail-section" style="margin-top:12px">
+          <h4>編集</h4>
+          <div class="info-grid-4">
+            <div class="fg"><label class="flbl">顧客名</label><input class="fi" id="ji-customer" value="${j.customerName||''}"></div>
+            <div class="fg"><label class="flbl">元請け</label><select class="fi" id="ji-upstream">${getUpstreamOptions().map(v=>`<option value="${v}" ${v===(j.upstream||'自受け')?'selected':''}>${v}</option>`).join('')}</select></div>
+            <div class="fg"><label class="flbl">車両</label><input class="fi" id="ji-vehicle" value="${j.vehicleName||''}"></div>
+            <div class="fg"><label class="flbl">登録番号</label><input class="fi" id="ji-plate" value="${j.plateNumber||plateOf(j.vehicleName)||''}"></div>
+          </div>
+          <div class="info-grid-4">
+            <div class="fg"><label class="flbl">引取予定日時</label><input type="date" class="fi" id="ji-pickup" value="${j.plannedPickupDate||''}"></div>
+            <div class="fg"><label class="flbl">作業予定日</label><input type="date" class="fi" id="ji-work" value="${j.plannedWorkDate||''}"></div>
+            <div class="fg"><label class="flbl">完了予定</label><input type="date" class="fi" id="ji-complete" value="${j.plannedCompleteDate||''}"></div>
+            <div class="fg"><label class="flbl">納車予定日時</label><input type="date" class="fi" id="ji-delivery" value="${j.plannedDeliveryDate||j.promisedDelivery||''}"></div>
+          </div>
+          <div class="info-grid-4">
+            <div class="fg"><label class="flbl">優先度</label><select class="fi" id="ji-priority">${Object.entries(PRI_LABELS).map(([k,v])=>`<option value="${k}" ${j.priority===k?'selected':''}>${v}</option>`).join('')}</select></div>
+            <div class="fg"><label class="flbl">担当フロント</label><select class="fi" id="ji-front">${getUsersForDiv(j.div).filter(u=>['admin','manager','front'].includes(u.role)).map(u=>`<option value="${u.id}" ${j.frontOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
+            <div class="fg"><label class="flbl">作業者</label><select class="fi" id="ji-worker"><option value="">担当者未確定</option>${getUsersForDiv(j.div).filter(u=>['worker','inspector','driver'].includes(u.role)).map(u=>`<option value="${u.id}" ${j.assignedWorkerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
+            <div class="fg"><label class="flbl">清算予定日</label><input type="date" class="fi" id="jf-settlement" value="${j.settlementDate||j.plannedDeliveryDate||j.promisedDelivery||''}"></div>
+          </div>
+          ${sm?`<div class="info-grid-3">
+            <div class="fg"><label class="flbl">見込み売上</label><input type="number" class="fi" id="jf-sales" value="${j.estimateAmount||0}"></div>
+            <div class="fg"><label class="flbl">見込み部品原価</label><input type="number" class="fi" id="jf-parts" value="${j.estimatePartsCost||0}"></div>
+            <div class="fg"><label class="flbl">見込み工賃</label><input type="number" class="fi" id="jf-labor" value="${j.estimateLaborCost||0}"></div>
+          </div>`:''}
+          <div class="fg"><label class="flbl">備考</label><textarea class="fi" id="ji-note">${j.note||''}</textarea></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" id="ji-save-all">保存</button></div>
+        </div>`:''}
+      </div>
+      <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+    </div></div>`;
+  };
+
+  mNewJob = function(){
+    const {user, qrScanned:qr}=STATE;
+    const selDiv=STATE.newJobDiv||(user.div==='all'||user.role==='admin'?null:user.div);
+    if(!selDiv){
+      return `<div class="mbk" id="mbk"><div class="mo" style="max-width:480px"><div class="mo-hdr"><span class="mo-ttl">＋ 受付登録</span><button class="mo-x" id="mc-x">×</button></div>
+      <div class="mo-body"><div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:14px">受付する事業を選択してください</div><div class="div-sel-row">
+      <button class="div-sel-btn" id="sel-div-bp"><div class="ds-ico">🔧</div><div class="ds-nm" style="color:var(--bp)">BP事業</div><div class="ds-sub">板金・ボディリペア</div></button>
+      <button class="div-sel-btn" id="sel-div-hp"><div class="ds-ico">🔩</div><div class="ds-nm" style="color:var(--hp)">HP事業</div><div class="ds-sub">車検・定点・一般整備</div></button>
+      </div></div><div class="mo-ft"><button class="btn btn-n" id="mc-x2">キャンセル</button></div></div></div>`;
+    }
+    const customerOpts=(STATE.customers||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    const vehicleOpts=(cid)=> (STATE.vehicles||[]).filter(v=>!cid || v.customerId===cid).map(v=>`<option value="${v.id}">${v.fullName||v.displayName} / ${v.plate||''}</option>`).join('');
+    const fOpts=getUsersForDiv(selDiv).filter(u=>['admin','manager','front'].includes(u.role)&&(user.role!=='front'||u.id===user.id)).map(u=>`<option value="${u.id}" ${user.id===u.id?'selected':''}>${u.name}</option>`).join('');
+    const wOpts=getUsersForDiv(selDiv).filter(u=>['worker','inspector','driver'].includes(u.role)).map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+    const templates=getTemplatesForDiv(selDiv);
+    const tmplOpts=Object.entries(templates).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+    const isHP=selDiv==='hp';
+    const defCust=qr?qr.owner:'';
+    const defVeh=qr?`${qr.maker} ${qr.model}`:'';
+    const defPlate=qr?qr.plate:'';
+    return `<div class="mbk" id="mbk"><div class="mo" style="max-width:980px">
+      <div class="mo-hdr"><span class="mo-ttl">${divTag(selDiv)} 受付登録 v3</span><button class="mo-x" id="mc-x">×</button></div>
+      <div class="mo-body">
+        <div id="nj-err"></div>
+        <div class="master-picker">
+          <div class="lookup-box">
+            <div style="font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:8px">顧客マスター検索</div>
+            <div class="fg"><label class="flbl">顧客選択</label><input class="fi" id="nj-customer-search" list="customer-master-list" placeholder="顧客名を入力または選択" value="${defCust}"><datalist id="customer-master-list">${(STATE.customers||[]).map(c=>`<option value="${c.name}">`).join('')}</datalist></div>
+            <div class="fg"><label class="flbl">元受け</label><select class="fi" id="nj-up">${getUpstreamOptions().map(v=>`<option value="${v}" ${v==='自受け'?'selected':''}>${v}</option>`).join('')}</select></div>
+            <div class="inline-help">顧客情報と車両情報は別テーブルとして管理し、紐づく車両を候補表示します。</div>
+          </div>
+          <div class="lookup-box">
+            <div style="font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:8px">車両マスター候補</div>
+            <div class="fg"><label class="flbl">既存車両選択</label><select class="fi" id="nj-vehicle-master"><option value="">新規車両として入力</option>${vehicleOpts('')}</select></div>
+            <div class="lookup-suggest" id="nj-vehicle-suggest"></div>
+          </div>
+        </div>
+
+        <div class="info-grid-4">
+          <div class="fg"><label class="flbl">顧客名 ★必須</label><input class="fi" id="nj-c" value="${defCust}" placeholder="例: 山田 太郎"></div>
+          <div class="fg"><label class="flbl">車両名 ★必須</label><input class="fi" id="nj-v" value="${defVeh}" placeholder="例: トヨタ プリウス"></div>
+          <div class="fg"><label class="flbl">登録番号 ★必須</label><input class="fi" id="nj-p" value="${defPlate}" placeholder="例: 品川 530 す 1234"></div>
+          <div class="fg"><label class="flbl">工程テンプレート</label><select class="fi" id="nj-t">${tmplOpts}</select><div class="inline-help" id="tmpl-st"></div></div>
+        </div>
+
+        <div class="info-grid-4">
+          <div class="fg"><label class="flbl">引取予定日時</label><input type="date" class="fi" id="nj-pickup" value="${T}"></div>
+          <div class="fg"><label class="flbl">作業予定日</label><input type="date" class="fi" id="nj-work" value="${T}">
+            <div class="quick-date-row">${isHP?`<button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${T}">当日</button><button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${addD(T,1)}">明日</button><button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${addD(T,2)}">明後日</button>`:`<button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${addD(T,2)}">2日後</button><button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${addD(T,7)}">1週間後</button><button type="button" class="quick-date-btn" data-qdate-target="nj-work" data-qdate="${addD(T,14)}">2週間後</button>`}</div>
+          </div>
+          <div class="fg"><label class="flbl">完了予定</label><input type="date" class="fi" id="nj-complete" value="${addD(T,1)}"></div>
+          <div class="fg"><label class="flbl">納車予定日時</label><input type="date" class="fi" id="nj-delivery" value="${addD(T,1)}"></div>
+        </div>
+
+        <div class="info-grid-4">
+          <div class="fg"><label class="flbl">担当フロント</label><select class="fi" id="nj-f">${fOpts}</select></div>
+          <div class="fg"><label class="flbl">作業者</label><select class="fi" id="nj-worker"><option value="">担当者未確定</option>${wOpts}</select></div>
+          <div class="fg"><label class="flbl">見込み売上</label><input class="fi" id="nj-e" type="number" value="${isHP?45000:180000}"></div>
+          <div class="fg"><label class="flbl">優先度</label><select class="fi" id="nj-pri">${Object.entries(PRI_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+        </div>
+      </div>
+      <div class="mo-ft">${user.div==='all'||user.role==='admin'?'<button class="btn btn-n" id="nj-back">事業選択に戻る</button>':''}<button class="btn btn-p" id="nj-save">登録する</button></div>
+    </div></div>`;
+  };
+
+  bindAll = function(){
+    origBindAll();
+
+    document.querySelectorAll('[data-qdate-target]').forEach(b=>b.addEventListener('click',()=>{
+      const t=document.getElementById(b.dataset.qdateTarget);
+      if(t) t.value=b.dataset.qdate;
+    }));
+
+    // Enhanced save from job detail
+    document.getElementById('ji-save-all')?.addEventListener('click',()=>{
+      const j=STATE.selectedJob; if(!j) return;
+      const vehicleName=((document.getElementById('ji-vehicle')?.value||j.vehicleName).trim()) + '　' + ((document.getElementById('ji-plate')?.value||j.plateNumber||'').trim());
+      updateJob(j.id,{
+        customerName:(document.getElementById('ji-customer')?.value||j.customerName).trim(),
+        upstream:document.getElementById('ji-upstream')?.value||j.upstream,
+        vehicleName:vehicleName,
+        plateNumber:(document.getElementById('ji-plate')?.value||j.plateNumber||'').trim(),
+        priority:document.getElementById('ji-priority')?.value||j.priority,
+        frontOwnerId:document.getElementById('ji-front')?.value||j.frontOwnerId,
+        assignedWorkerId:document.getElementById('ji-worker')?.value||'',
+        plannedPickupDate:document.getElementById('ji-pickup')?.value||'',
+        plannedWorkDate:document.getElementById('ji-work')?.value||'',
+        plannedCompleteDate:document.getElementById('ji-complete')?.value||'',
+        plannedDeliveryDate:document.getElementById('ji-delivery')?.value||j.plannedDeliveryDate,
+        promisedDelivery:document.getElementById('ji-delivery')?.value||j.promisedDelivery,
+        internalDeadline:document.getElementById('ji-complete')?.value||j.internalDeadline,
+        settlementDate:document.getElementById('jf-settlement')?.value||j.settlementDate,
+        note:document.getElementById('ji-note')?.value||'',
+        estimateAmount:parseInt(document.getElementById('jf-sales')?.value||j.estimateAmount||0,10)||0,
+        estimatePartsCost:parseInt(document.getElementById('jf-parts')?.value||j.estimatePartsCost||0,10)||0,
+        estimateLaborCost:parseInt(document.getElementById('jf-labor')?.value||j.estimateLaborCost||0,10)||0
+      });
+      normalizeMastersAndJobs();
+      showToast('案件詳細を更新しました');
+    });
+
+    // Customer / vehicle lookup in new job
+    function refreshVehicleSuggestions(){
+      const search=(document.getElementById('nj-customer-search')?.value||'').trim();
+      const customer=(STATE.customers||[]).find(c=>c.name===search);
+      const suggest=document.getElementById('nj-vehicle-suggest');
+      const select=document.getElementById('nj-vehicle-master');
+      if(select){
+        const opts=(STATE.vehicles||[]).filter(v=>!customer || v.customerId===customer.id);
+        select.innerHTML='<option value="">新規車両として入力</option>'+opts.map(v=>`<option value="${v.id}">${v.fullName||v.displayName} / ${v.plate||''}</option>`).join('');
+      }
+      if(suggest){
+        const opts=(STATE.vehicles||[]).filter(v=>!customer || v.customerId===customer.id).slice(0,8);
+        suggest.innerHTML=opts.map(v=>`<button type="button" class="lookup-chip" data-vehpick="${v.id}">${v.fullName||v.displayName} / ${v.plate||''}</button>`).join('');
+        suggest.querySelectorAll('[data-vehpick]').forEach(b=>b.addEventListener('click',()=>{
+          const v=(STATE.vehicles||[]).find(x=>x.id===b.dataset.vehpick);
+          if(!v) return;
+          document.getElementById('nj-v').value=v.displayName||vehShort(v.fullName);
+          document.getElementById('nj-p').value=v.plate||'';
+          document.getElementById('nj-vehicle-master').value=v.id;
+          if(search && !document.getElementById('nj-c').value) document.getElementById('nj-c').value=search;
+        }));
+      }
+      if(customer){
+        document.getElementById('nj-c').value=customer.name;
+        document.getElementById('nj-up').value=customer.upstream||document.getElementById('nj-up').value;
+      }
+    }
+    document.getElementById('nj-customer-search')?.addEventListener('change',refreshVehicleSuggestions);
+    document.getElementById('nj-customer-search')?.addEventListener('input',refreshVehicleSuggestions);
+    document.getElementById('nj-vehicle-master')?.addEventListener('change',()=>{
+      const v=(STATE.vehicles||[]).find(x=>x.id===document.getElementById('nj-vehicle-master').value);
+      if(v){
+        document.getElementById('nj-v').value=v.displayName||vehShort(v.fullName);
+        document.getElementById('nj-p').value=v.plate||'';
+        const c=(STATE.customers||[]).find(c=>c.id===v.customerId);
+        if(c){
+          document.getElementById('nj-customer-search').value=c.name;
+          document.getElementById('nj-c').value=c.name;
+          document.getElementById('nj-up').value=c.upstream||document.getElementById('nj-up').value;
+        }
+      }
+    });
+    refreshVehicleSuggestions();
+
+    // new job create override
+    document.getElementById('nj-save')?.addEventListener('click',()=>{
+      const modal = STATE.modal==='newJob' && STATE.newJobDiv;
+      if(!modal) return;
+      const div=STATE.newJobDiv;
+      const cname=(document.getElementById('nj-c')?.value||'').trim();
+      const vname=(document.getElementById('nj-v')?.value||'').trim();
+      const plate=(document.getElementById('nj-p')?.value||'').trim();
+      if(!cname || !vname || !plate){
+        const err=document.getElementById('nj-err'); if(err) err.innerHTML='<div class="alert danger">⚠️ 顧客名・車両名・登録番号を入力してください</div>'; return;
+      }
+      const customerSearch=(document.getElementById('nj-customer-search')?.value||'').trim();
+      let customer=(STATE.customers||[]).find(c=>c.name===customerSearch || c.name===cname);
+      if(!customer){
+        customer={id:'c'+Date.now(),name:cname,phone:'',memo:'',upstream:document.getElementById('nj-up')?.value||'自受け'};
+        STATE.customers=[customer,...STATE.customers];
+      }else{
+        customer={...customer,upstream:document.getElementById('nj-up')?.value||customer.upstream};
+        STATE.customers=STATE.customers.map(c=>c.id===customer.id?customer:c);
+      }
+      let vehicle=(STATE.vehicles||[]).find(v=>v.id===document.getElementById('nj-vehicle-master')?.value);
+      if(!vehicle){
+        vehicle={id:'v'+Date.now(),customerId:customer.id,displayName:vname,plate:plate,fullName:`${vname}　${plate}`,memo:''};
+        STATE.vehicles=[vehicle,...STATE.vehicles];
+      }else{
+        vehicle={...vehicle,customerId:customer.id,displayName:vname,plate:plate,fullName:`${vname}　${plate}`};
+        STATE.vehicles=STATE.vehicles.map(v=>v.id===vehicle.id?vehicle:v);
+      }
+      const tk=document.getElementById('nj-t').value;
+      const tmpl=getTemplatesForDiv(div)[tk];
+      const prefix=div==='hp'?'h':'j';
+      const count=STATE.jobs.filter(j=>j.div===div).length;
+      const newId=prefix+Date.now();
+      const num=div==='hp'?String(30000+count+1):String(20000+count+1);
+      const assignedWorkerId=document.getElementById('nj-worker')?.value||'';
+      const plannedWork=document.getElementById('nj-work')?.value||T;
+      const tasks=tmpl.stages.map((sid,i)=>{
+        const st=STAGES.find(s=>s.id===sid);
+        const ass = (st && ['work','bankin','mechanical','painting','polishing','carwash','inspection','quality_check','shaken_insp','pickup','delivery'].includes(st.code)) ? (assignedWorkerId||null) : null;
+        return {id:`${newId}_t${i}`,jobId:newId,stageId:sid,sequence:i,status:i===0?'pending':'pending',assigneeId:ass,finishEta:plannedWork,holdReasonId:null,ngReasonId:null,reworkCount:0,note:'',version:1,completedAt:null};
+      });
+      const nj={id:newId,jobNumber:`#${num}`,customerId:customer.id,vehicleId:vehicle.id,customerName:cname,vehicleName:`${vname}　${plate}`,plateNumber:plate,upstream:document.getElementById('nj-up')?.value||'自受け',priority:document.getElementById('nj-pri')?.value||'normal',div,subType:div==='hp'?tk:null,entryDate:T,plannedPickupDate:document.getElementById('nj-pickup')?.value||'',plannedWorkDate:plannedWork,plannedCompleteDate:document.getElementById('nj-complete')?.value||plannedWork,plannedDeliveryDate:document.getElementById('nj-delivery')?.value||plannedWork,promisedDelivery:document.getElementById('nj-delivery')?.value||plannedWork,settlementDate:document.getElementById('nj-delivery')?.value||plannedWork,frontOwnerId:document.getElementById('nj-f')?.value||STATE.user.id,assignedWorkerId,createdBy:STATE.user.id,internalDeadline:document.getElementById('nj-complete')?.value||plannedWork,estimateAmount:parseInt(document.getElementById('nj-e')?.value||0,10)||0,estimatePartsCost:0,estimateLaborCost:0,actualAmount:null,settlementStatus:'unsettled',status:'open',version:1,note:'',tasks};
+      setState({jobs:[nj,...STATE.jobs],modal:null,qrScanned:null,newJobDiv:null});
+      normalizeMastersAndJobs();
+      showToast(`案件 #${num} を登録しました`);
+    }, {capture:true});
+
+    // transfer print
+    document.getElementById('transfer-print')?.addEventListener('click',()=>{
+      const g=transferGroups();
+      const rows=[...g.pickups,...g.deliveries,...g.unresolved].sort((a,b)=>{
+        return String(a.j.upstream||'').localeCompare(String(b.j.upstream||''),'ja') || String(a.j.customerName||'').localeCompare(String(b.j.customerName||''),'ja');
+      });
+      const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>引取納車リスト</title><style>body{font-family:sans-serif;padding:24px;font-size:12px}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f3f4f6}</style></head><body><h1>引取納車リスト</h1><div>${new Date().toLocaleString('ja-JP')}</div><table><thead><tr><th>元請け</th><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>登録番号</th><th>予定日</th><th>状態</th></tr></thead><tbody>${rows.map(({j,t})=>`<tr><td>${j.upstream||'自受け'}</td><td>${STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?'引取':'納車'}</td><td>${j.jobNumber}</td><td>${j.customerName}</td><td>${vehShort(j.vehicleName)}</td><td>${j.plateNumber||plateOf(j.vehicleName)}</td><td>${fmtD(STAGES.find(s=>s.id===t.stageId)?.code==='pickup'?j.plannedPickupDate:j.plannedDeliveryDate)}</td><td>${displayStatus(t,j)}</td></tr>`).join('')}</tbody></table></body></html>`;
+      const w=window.open('','_blank'); if(!w) return; w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>w.print(),250);
+    });
+
+    // drag and drop kanban
+    let dragInfo=null;
+    document.querySelectorAll('[data-dragjob]').forEach(el=>{
+      el.addEventListener('dragstart',()=>{
+        dragInfo={jobId:el.dataset.dragjob, taskId:el.dataset.dragtask};
+        el.classList.add('dragging');
+      });
+      el.addEventListener('dragend',()=>{ dragInfo=null; el.classList.remove('dragging'); document.querySelectorAll('.kb-col').forEach(c=>c.classList.remove('drag-over')); });
+    });
+    document.querySelectorAll('[data-stage-drop],[data-transfer-col]').forEach(zone=>{
+      zone.addEventListener('dragover',e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+      zone.addEventListener('drop',e=>{
+        e.preventDefault(); zone.classList.remove('drag-over');
+        if(!dragInfo) return;
+        const j=STATE.jobs.find(x=>x.id===dragInfo.jobId); if(!j) return;
+        if(zone.dataset.stageDrop){
+          const [div,stageId]=zone.dataset.stageDrop.split('__');
+          const targetIndex=j.tasks.findIndex(t=>t.stageId===stageId);
+          if(targetIndex<0) return;
+          const tasks=j.tasks.map((t,idx)=>{
+            if(idx<targetIndex) return {...t,status:'completed',completedAt:t.completedAt||new Date().toISOString(),version:(t.version||1)+1};
+            if(idx===targetIndex) return {...t,status:'in_progress',completedAt:null,version:(t.version||1)+1,assigneeId:t.assigneeId||j.assignedWorkerId||null};
+            return {...t,status:'pending',completedAt:null,version:(t.version||1)+1};
+          });
+          const jobs=STATE.jobs.map(x=>x.id===j.id?{...x,tasks}:x);
+          setState({jobs});
+          showToast('工程を移動しました');
+        }else if(zone.dataset.transferCol){
+          const task= j.tasks.find(t=>t.id===dragInfo.taskId); if(!task) return;
+          let nextStatus = task.status;
+          if(zone.dataset.transferCol==='done') nextStatus='completed';
+          else if(zone.dataset.transferCol==='unresolved') nextStatus='pending';
+          else nextStatus='in_progress';
+          const jobs=STATE.jobs.map(x=>x.id===j.id?{...x,tasks:x.tasks.map(t=>t.id===task.id?{...t,status:nextStatus,completedAt:nextStatus==='completed'?new Date().toISOString():null,version:(t.version||1)+1}:t)}:x);
+          setState({jobs});
+          showToast('納引ステータスを更新しました');
+        }
+      });
+    });
+  };
+
+  // Make sure newly completed tasks can stay on today's board, and toast always disappears
+  showToast = function(msg,type='s'){
+    document.querySelectorAll('.toast').forEach(el=>el.remove());
+    clearTimeout(STATE.toastTimer);
+    const t=setTimeout(()=>{document.querySelectorAll('.toast').forEach(el=>el.remove()); STATE.toast=null; STATE.toastTimer=null;},3000);
+    STATE.toast={msg,type}; STATE.toastTimer=t; render();
+  };
+
+  normalizeMastersAndJobs();
+  document.title='Ams PRO v3';
+  render();
+})();
+</script>
+
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v2.21</title>
+<title>Ams PRO v2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1753,38 +1753,43 @@ function mNewJob(){
 
 // ── CONFLICT ──────────────────────────────────────────
 function mConflict(){
-  const {conflictData:cd}=STATE;if(!cd)return'';
+  const cd=STATE.conflictData;
+  if(!cd||!cd.task)return'';
   const st=STAGES.find(s=>s.id===cd.task.stageId);
-  const stageName=st?.name||'対象工程';
-  const currentLabel=ST_LABELS[cd.task.status]||cd.task.status||'未設定';
-  const attemptedLabel=ST_LABELS[cd.attempted?.status||cd.task.status]||cd.attempted?.status||cd.task.status||'未設定';
-  return`<div class="mbk" id="mbk">
-  <div class="mo" style="max-width:560px">
-    <div class="mo-hdr">
-      <span class="mo-ttl" style="color:var(--red)">⚠️ 更新競合 (HTTP 409)</span>
-      <button class="mo-x" id="mc-x">×</button>
-    </div>
-    <div class="mo-body">
-      <div class="cf-box">
-        <div class="cf-ttl">🔒 更新の競合を検知</div>
-        <div style="font-size:12.5px;color:var(--txt2)">別端末または直前の操作で「${stageName}」の状態が先に変更されました。</div>
-        <div class="cf-grid">
-          <div class="cf-col"><div class="cf-cl">現在の状態</div>
-            <div style="font-weight:700;color:var(--grn)">${currentLabel}</div>
-          </div>
-          <div class="cf-col"><div class="cf-cl">保存しようとした状態</div>
-            <div style="font-weight:700;color:var(--ylw)">${attemptedLabel}</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-n" id="cf-reload">🔄 再読み込みして最新を確認<span style="margin-left:auto;font-size:11px;color:var(--grn)">推奨</span></button>
-        <button class="btn btn-y" id="cf-force">⚡ 自分の変更で上書き保存<span style="margin-left:auto;font-size:11px;color:var(--red)">要注意</span></button>
-        <button class="btn btn-n" id="cf-cancel">✖ キャンセル</button>
-      </div>
-    </div>
-  </div>
-</div>`;
+  const stageName=(st&&st.name)?st.name:'対象工程';
+  const currentStatus=(cd.task&&cd.task.status)?cd.task.status:'pending';
+  const attemptedStatus=(cd.attempted&&cd.attempted.status)?cd.attempted.status:currentStatus;
+  const currentLabel=ST_LABELS[currentStatus]||currentStatus||'未設定';
+  const attemptedLabel=ST_LABELS[attemptedStatus]||attemptedStatus||'未設定';
+  return[
+    '<div class="mbk" id="mbk">',
+    '  <div class="mo" style="max-width:560px">',
+    '    <div class="mo-hdr">',
+    '      <span class="mo-ttl" style="color:var(--red)">⚠️ 更新競合 (HTTP 409)</span>',
+    '      <button class="mo-x" id="mc-x">×</button>',
+    '    </div>',
+    '    <div class="mo-body">',
+    '      <div class="cf-box">',
+    '        <div class="cf-ttl">🔒 更新の競合を検知</div>',
+    '        <div style="font-size:12.5px;color:var(--txt2)">別端末または直前の操作で「'+esc(stageName)+'」の状態が先に変更されました。</div>',
+    '        <div class="cf-grid">',
+    '          <div class="cf-col"><div class="cf-cl">現在の状態</div>',
+    '            <div style="font-weight:700;color:var(--grn)">'+esc(currentLabel)+'</div>',
+    '          </div>',
+    '          <div class="cf-col"><div class="cf-cl">保存しようとした状態</div>',
+    '            <div style="font-weight:700;color:var(--ylw)">'+esc(attemptedLabel)+'</div>',
+    '          </div>',
+    '        </div>',
+    '      </div>',
+    '      <div style="display:flex;flex-direction:column;gap:8px">',
+    '        <button class="btn btn-n" id="cf-reload">🔄 再読み込みして最新を確認<span style="margin-left:auto;font-size:11px;color:var(--grn)">推奨</span></button>',
+    '        <button class="btn btn-y" id="cf-force">⚡ 自分の変更で上書き保存<span style="margin-left:auto;font-size:11px;color:var(--red)">要注意</span></button>',
+    '        <button class="btn btn-n" id="cf-cancel">✖ キャンセル</button>',
+    '      </div>',
+    '    </div>',
+    '  </div>',
+    '</div>'
+  ].join('');
 }
 
 // ============================================================

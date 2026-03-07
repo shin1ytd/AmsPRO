@@ -178,4 +178,382 @@ function initData(){
      entryDate:isoDate(today),promisedPickup:isoDate(today)+'T10:00',plannedWorkStart:isoDate(today)+'T11:00',promisedDelivery:isoDate(today)+'T18:00',
      estimateAmount:120000,tasks:[mkT('j1','bs1','completed','u3'),mkT('j1','bs2','completed','u16'),mkT('j1','bs8','in_progress','u4'),mkT('j1','bs15','pending')]},
     {id:'j2',jobNumber:'#30001',customerId:'c4',customerName:'大野 紀子',vehicleName:'ホンダ フリード　練馬 501 あ 5678',div:'hp',priority:'normal',upstream:'自受け',
-     entryDate:addD(today,-1),promisedPickup:addD(today,1)+'T09:00',plannedWorkStart:add
+     entryDate:addD(today,-1),promisedPickup:addD(today,1)+'T09:00',plannedWorkStart:addD(today,1)+'T10:00',promisedDelivery:addD(today,2)+'T17:00',
+     estimateAmount:45000,tasks:[mkT('j2','hs1','completed','u12'),mkT('j2','hs2','pending','u16'),mkT('j2','hs5','pending',null),mkT('j2','hs9','pending')]}
+  ];
+}
+
+// ============================================================
+// CORE LOGIC & RENDER
+// ============================================================
+function setState(patch){ Object.assign(STATE,typeof patch==='function'?patch(STATE):patch); render(); }
+
+function showToast(msg,type='s'){
+  if(STATE.toastTimer) clearTimeout(STATE.toastTimer);
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=(type==='s'?'✅ ':type==='e'?'❌ ':'ℹ️ ')+msg;
+  document.body.appendChild(el);
+  STATE.toastTimer=setTimeout(()=>{
+    el.style.opacity=0; el.style.transform='translateY(10px)';
+    setTimeout(()=>el.remove(),300);
+  },3000);
+}
+
+function render(){
+  const root=document.getElementById('app');
+  if(!root)return;
+  if(!STATE.user){ root.innerHTML=loginHTML(); bindLogin(); return; }
+  root.innerHTML=shellHTML();
+  bindEvents();
+}
+
+function loginHTML(){
+  return `<div class="login-bg"><div class="login-box">
+    <h2 style="color:var(--acc);text-align:center;margin-bottom:20px">🔧 Ams PRO v2.3</h2>
+    <div class="fg"><label class="flbl">ログインユーザー選択 (デモ)</label>
+      <select class="fi" id="l-user">${USERS.map(u=>`<option value="${u.id}">${u.name} (${u.role})</option>`).join('')}</select>
+    </div>
+    <button class="btn btn-p" style="width:100%" onclick="login()">ログイン</button>
+  </div></div>`;
+}
+
+function login(){
+  const uid=document.getElementById('l-user').value;
+  setState({user:USERS.find(u=>u.id===uid), view:'myview'});
+}
+
+function shellHTML(){
+  const {user,view}=STATE;
+  const nav=[
+    {v:'myview',l:'👤 マイビュー'},{v:'dashboard',l:'📊 ダッシュボード'},
+    {v:'kanban',l:'🚗 引取り・納車'},{v:'bp_kanban',l:'🔵 BPカンバン'},{v:'hp_kanban',l:'🩵 HPカンバン'},
+    {v:'joblist',l:'📋 案件一覧'},{v:'masters',l:'⚙️ マスタ管理'}
+  ].map(i=>`<button class="nav-btn ${view===i.v?'on':''}" data-view="${i.v}">${i.l}</button>`).join('');
+
+  return `<aside class="sb">
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">v2.3 構造改革版</div></div>
+    <nav class="sb-nav">${nav}</nav>
+    <div class="sb-user"><div class="u-av">${user.name[0]}</div>
+      <div><div class="u-nm">${user.name}</div><div class="u-rl">${user.role}</div></div>
+      <button class="btn btn-n btn-sm" style="margin-left:auto;padding:2px 6px" onclick="setState({user:null})">退出</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <span class="tb-title">${view.toUpperCase()}</span>
+      <div class="tb-right">
+        <button class="btn btn-n btn-sm" onclick="printTransferList()" style="display:${view==='kanban'?'block':'none'}">🖨️ 引取納車リスト印刷</button>
+        <button class="btn btn-hp btn-sm" data-action="new-hp">＋ HP受付</button>
+        <button class="btn btn-p btn-sm" data-action="new-bp">＋ BP受付</button>
+      </div>
+    </header>
+    <div class="content ${view.includes('kanban')?'no-pad':''}">${getView()}</div>
+  </div>
+  ${modalHTML()}`;
+}
+
+function getView(){
+  const v=STATE.view;
+  if(v==='myview') return vMyView();
+  if(v==='dashboard') return vDashboard();
+  if(v==='kanban') return vTransferKanban();
+  if(v==='bp_kanban') return vDivKanban('bp');
+  if(v==='hp_kanban') return vDivKanban('hp');
+  if(v==='joblist') return vJobList();
+  if(v==='masters') return `<div class="alert info">マスタ管理画面は統合済みです（省略表示）</div>`;
+  return '';
+}
+
+// ── MY VIEW ─────────────────────────
+function vMyView(){
+  const myTasks=STATE.jobs.flatMap(j=>j.tasks.filter(t=>t.assigneeId===STATE.user.id&&t.status!=='completed').map(t=>({j,t})));
+  // 担当者未確定（全体共有）タスクの抽出（予約段階を除く）
+  const unassigned=STATE.jobs.flatMap(j=>j.tasks.filter(t=>!t.assigneeId && t.status!=='completed' && STAGES.find(s=>s.id===t.stageId)?.code!=='reservation').map(t=>({j,t})));
+
+  const mkCard=(item,alert=false)=>`
+    <div class="tc" data-ojob="${item.j.id}">
+      <div class="tc-st">${STAGES.find(s=>s.id===item.t.stageId)?.name}</div>
+      <div class="tc-info">
+        <div class="tc-job">${divTag(item.j.div)} ${item.j.customerName} <span class="up-badge" style="background:var(--txt3)">${item.j.upstream}</span></div>
+        <div class="tc-veh">${item.j.vehicleName}</div>
+      </div>
+      ${alert?`<span class="bx bx-r">担当者未設定</span>`:''}
+    </div>`;
+
+  return `
+    <div style="margin-bottom:24px"><h3 style="font-size:14px;margin-bottom:12px">🔨 あなたの担当タスク</h3>
+      ${myTasks.length?myTasks.map(i=>mkCard(i)).join(''):'<div class="alert info">現在担当中のタスクはありません</div>'}
+    </div>
+    <div><h3 style="font-size:14px;margin-bottom:12px;color:var(--red)">🚨 担当者未確定（全体共有）</h3>
+      <div class="alert warn">タスクの見落としを防ぐため、担当者がアサインされていない稼働タスクを表示しています。</div>
+      ${unassigned.length?unassigned.map(i=>mkCard(i,true)).join(''):'<div class="alert success">未確定のタスクはありません</div>'}
+    </div>`;
+}
+
+// ── DASHBOARD ─────────────────────────
+function vDashboard(){
+  const bJobs=STATE.jobs.filter(j=>j.div==='bp');
+  const hJobs=STATE.jobs.filter(j=>j.div==='hp');
+  const bTot=bJobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
+  const hTot=hJobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
+  const mkBar=(v,m,c)=>`<div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:${Math.min(100,v/m*100)}%;background:${c}"></div></div>`;
+
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;height:100%">
+    <div class="card"><div class="card-t">🔵 BP事業 (板金) 進捗</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl">見込売上</div><div class="kpi-val" style="color:var(--bp)">${(bTot/10000).toFixed(0)}<span style="font-size:14px">万</span></div>
+          <div style="margin-top:8px;font-size:10px;color:var(--txt3)">目標800万 ${mkBar(bTot,8000000,'var(--bp)')}</div></div>
+        <div class="kpi"><div class="kpi-lbl">進行中案件数</div><div class="kpi-val">${bJobs.length}</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-t">🩵 HP事業 (整備) 進捗</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl">見込売上</div><div class="kpi-val" style="color:var(--hp)">${(hTot/10000).toFixed(0)}<span style="font-size:14px">万</span></div>
+          <div style="margin-top:8px;font-size:10px;color:var(--txt3)">目標400万 ${mkBar(hTot,4000000,'var(--hp)')}</div></div>
+        <div class="kpi"><div class="kpi-lbl">進行中案件数</div><div class="kpi-val">${hJobs.length}</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── TRANSFER KANBAN ─────────────────────────
+function vTransferKanban(){
+  const getT=(code)=>STATE.jobs.map(j=>{
+    const t=j.tasks.find(x=>STAGES.find(s=>s.id===x.stageId)?.code===code);
+    if(code==='delivery'){
+      const pk=j.tasks.find(x=>STAGES.find(s=>s.id===x.stageId)?.code==='pickup');
+      if(pk && pk.status!=='completed') return null; // 引取未完了なら納車に出さない
+    }
+    // 当日完了したものは残す
+    if(t && t.status==='completed' && t.completedAt!==isoDate(today)) return null;
+    return t?{j,t}:null;
+  }).filter(Boolean);
+
+  const mkCard=(i)=>{
+    const d=i.j[i.t.stageId.includes('2')?'promisedPickup':'promisedDelivery'];
+    return `<div class="kb-card ${i.j.div==='hp'?'hp-card':'bp-card'}" data-ojob="${i.j.id}" draggable="true" data-tid="${i.t.id}">
+      <div class="kc-num"><span>${divTag(i.j.div)} ${i.j.customerName}</span><span class="up-badge" style="background:${DEFAULT_UPSTREAMS.find(u=>u.name===i.j.upstream)?.color||'#000'}">${i.j.upstream}</span></div>
+      <div class="kc-veh"><span class="kc-veh-plate">${i.j.vehicleName.split('　')[1]||i.j.vehicleName}</span></div>
+      <div class="kc-ft">
+        <span class="kc-ass" style="color:${i.t.status==='completed'?'var(--grn)':'var(--txt3)'}">${PD_ST_LABELS[i.t.status]||'未定'}</span>
+        <span class="kc-day safe">${fmtD(d)}</span>
+      </div>
+    </div>`;
+  };
+
+  return `<div class="kb-scroll-wrap" id="kb-area">
+    <div class="kb-col" data-col="pickup"><div class="kb-hdr">🚗 引取予定 (予約含む) <span class="kb-cnt">${getT('pickup').length}</span></div><div class="kb-cards">${getT('pickup').map(mkCard).join('')}</div></div>
+    <div class="kb-col" data-col="delivery"><div class="kb-hdr">📦 納車予定 <span class="kb-cnt">${getT('delivery').length}</span></div><div class="kb-cards">${getT('delivery').map(mkCard).join('')}</div></div>
+  </div>`;
+}
+
+// ── DIV KANBAN ─────────────────────────
+function vDivKanban(div){
+  const stgs=div==='bp'?BP_STAGES:HP_STAGES;
+  const jbs=STATE.jobs.filter(j=>j.div===div);
+
+  const cols=stgs.map(s=>{
+    const cards=jbs.filter(j=>j.tasks.some(t=>t.stageId===s.id && (t.status!=='completed' || t.completedAt===isoDate(today))));
+    return `<div class="kb-col" data-col="${s.id}"><div class="kb-hdr">${s.name} <span class="kb-cnt">${cards.length}</span></div>
+      <div class="kb-cards">
+        ${cards.map(j=>{
+          const t=j.tasks.find(x=>x.stageId===s.id);
+          return `<div class="kb-card ${div==='hp'?'hp-card':'bp-card'}" data-ojob="${j.id}" draggable="true" data-tid="${t.id}">
+            <div class="kc-num"><span>${j.jobNumber}</span><span class="up-badge" style="background:${DEFAULT_UPSTREAMS.find(u=>u.name===j.upstream)?.color||'#000'}">${j.upstream}</span></div>
+            <div class="kc-veh"><span class="kc-veh-plate">${j.vehicleName.split('　')[1]||j.vehicleName}</span></div>
+            <div class="kc-ft"><span class="kc-ass" style="color:${t.status==='completed'?'var(--grn)':'inherit'}">${t.status==='completed'?'当日完了':ST_LABELS[t.status]}</span>
+            <span class="kc-day safe">${USERS.find(u=>u.id===t.assigneeId)?.name.split(' ')[0]||'未定'}</span></div>
+          </div>`;
+        }).join('')}
+      </div></div>`;
+  }).join('');
+  return `<div class="kb-scroll-wrap" id="kb-area">${cols}</div>`;
+}
+
+// ── JOB LIST ─────────────────────────
+function vJobList(){
+  const rows=STATE.jobs.map(j=>{
+    const st=STAGES.find(s=>s.id===j.tasks.find(t=>t.status!=='completed')?.stageId)?.name||'完了';
+    return `<tr data-ojob="${j.id}" style="cursor:pointer">
+      <td>${divTag(j.div)}</td><td class="td-m">${j.jobNumber}</td><td>${j.customerName}</td>
+      <td><span class="up-badge" style="background:${DEFAULT_UPSTREAMS.find(u=>u.name===j.upstream)?.color||'#000'}">${j.upstream}</span></td>
+      <td>${j.vehicleName}</td><td>${st}</td><td>${fmtD(j.promisedDelivery)}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="tbl-wrap"><table><thead><tr><th>区分</th><th>番号</th><th>顧客</th><th>元請け</th><th>車両</th><th>現在工程</th><th>納車予定</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ── MODALS (Flat UI) ─────────────────────────
+function modalHTML(){
+  if(STATE.modal==='newJob') return mNewJob();
+  if(STATE.modal==='jobDetail') return mJobDetail();
+  return '';
+}
+
+function mNewJob(){
+  const isHp=STATE.newDiv==='hp';
+  return `<div class="mbk" id="mbk"><div class="mo" style="max-width:800px">
+    <div class="mo-hdr"><div class="mo-ttl">＋ 受付登録 (${isHp?'🩵 HP事業':'🔵 BP事業'})</div><button class="mo-x" data-action="close">×</button></div>
+    <div class="mo-body">
+      <div class="card"><div class="form-grid">
+        <div class="fg"><label class="flbl">顧客選択 (マスタ連動)</label><select class="fi" id="nj-cust"><option value="">-- 新規または選択 --</option>${CUSTOMERS_DB.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+        <div class="fg"><label class="flbl">車両選択</label><select class="fi" id="nj-veh"><option value="">-- 顧客を選択してください --</option></select></div>
+        <div class="fg"><label class="flbl">元請け</label><select class="fi" id="nj-up">${DEFAULT_UPSTREAMS.map(u=>`<option value="${u.name}">${u.name}</option>`).join('')}</select></div>
+        <div class="fg"><label class="flbl">担当者</label><select class="fi" id="nj-ass"><option value="">未確定 (全体共有)</option>${USERS.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+        <div class="fg"><label class="flbl">引取予定日時</label><input type="datetime-local" class="fi" id="nj-pk"></div>
+        <div class="fg"><label class="flbl">納車予定日時</label><input type="datetime-local" class="fi" id="nj-dl">
+          <div style="display:flex;gap:5px;margin-top:5px">
+            ${isHp?`<button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${isoDate(today)}T17:00">当日</button><button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${addD(today,1)}T17:00">明日</button><button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${addD(today,2)}T17:00">明後日</button>`
+                 :`<button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${addD(today,2)}T17:00">2日後</button><button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${addD(today,7)}T17:00">1週間後</button><button class="btn btn-n btn-sm" data-action="set-deliv" data-val="${addD(today,14)}T17:00">2週間後</button>`}
+          </div>
+        </div>
+      </div></div>
+    </div>
+    <div class="mo-ft"><button class="btn btn-n" data-action="close">キャンセル</button><button class="btn btn-p" data-action="save-nj">登録する</button></div>
+  </div></div>`;
+}
+
+function mJobDetail(){
+  const j=STATE.selectedJob;
+  return `<div class="mbk" id="mbk"><div class="mo">
+    <div class="mo-hdr"><div><div class="mo-ttl">${divTag(j.div)} ${j.jobNumber} ${j.customerName}</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">${j.vehicleName}</div></div><button class="mo-x" data-action="close">×</button></div>
+    <div class="mo-body">
+      <div class="card" style="margin-bottom:15px"><div class="card-t">基本情報・スケジュール (直接編集)</div>
+        <div class="form-grid">
+          <div class="fg"><label class="flbl">元請け</label><select class="fi" id="jd-up">${DEFAULT_UPSTREAMS.map(u=>`<option value="${u.name}" ${u.name===j.upstream?'selected':''}>${u.name}</option>`).join('')}</select></div>
+          <div class="fg"><label class="flbl">引取予定</label><input type="datetime-local" class="fi" id="jd-pk" value="${j.promisedPickup||''}"></div>
+          <div class="fg"><label class="flbl">作業予定</label><input type="datetime-local" class="fi" id="jd-ws" value="${j.plannedWorkStart||''}"></div>
+          <div class="fg"><label class="flbl">完了予定</label><input type="datetime-local" class="fi" id="jd-ce" value="${j.plannedCompletion||''}"></div>
+          <div class="fg"><label class="flbl">納車予定</label><input type="datetime-local" class="fi" id="jd-dl" value="${j.promisedDelivery||''}"></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-t">財務情報 (直接編集)</div>
+        <div class="form-grid">
+          <div class="fg"><label class="flbl">見積金額</label><input type="number" class="fi" id="jd-ea" value="${j.estimateAmount||0}"></div>
+          <div class="fg"><label class="flbl">部品原価</label><input type="number" class="fi" id="jd-ep" value="${j.estimatePartsCost||0}"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mo-ft"><button class="btn btn-n" data-action="close">閉じる</button><button class="btn btn-p" data-action="save-jd">情報を保存</button></div>
+  </div></div>`;
+}
+
+// ── DRAG & DROP LOGIC ─────────────────────────
+window.allowDrop = (ev)=>{ ev.preventDefault(); ev.currentTarget.classList.add('drag-over');};
+window.dragLeave = (ev)=>{ ev.currentTarget.classList.remove('drag-over');};
+window.drag = (ev)=>{ ev.dataTransfer.setData("jid", ev.currentTarget.dataset.ojob); ev.dataTransfer.setData("tid", ev.currentTarget.dataset.tid);};
+window.drop = (ev)=>{
+  ev.preventDefault();
+  const targetCol = ev.currentTarget.closest('.kb-col');
+  if(targetCol) targetCol.classList.remove('drag-over');
+  const jid = ev.dataTransfer.getData("jid");
+  const sId = targetCol.dataset.col;
+  const job = STATE.jobs.find(j=>j.id===jid);
+  if(!job) return;
+
+  // カンバン列IDによるタスク状態の一括更新
+  let targetStageId = sId;
+  if(sId==='pickup'||sId==='delivery') targetStageId = STAGES.find(s=>s.code===sId && s.div===job.div)?.id;
+  
+  const sIdx = STAGES.findIndex(s=>s.id===targetStageId);
+  job.tasks.forEach(t=>{
+    const tIdx = STAGES.findIndex(s=>s.id===t.stageId);
+    if(tIdx < sIdx) { t.status='completed'; t.completedAt=isoDate(today); }
+    else if(tIdx === sIdx) { t.status='in_progress'; t.completedAt=null; }
+    else { t.status='pending'; t.completedAt=null; }
+  });
+  setState({});
+  showToast('工程を移動しました');
+};
+
+// ── PRINT LOGIC ─────────────────────────
+window.printTransferList = () => {
+  const tJ = STATE.jobs.filter(j=>j.tasks.some(t=>['pickup','delivery'].includes(STAGES.find(s=>s.id===t.stageId)?.code)&&t.status!=='completed'));
+  tJ.sort((a,b)=>(a.upstream||'').localeCompare(b.upstream||''));
+  let html = `<h2>🚗 引取・納車リスト (${isoDate(today)})</h2><table border="1" style="width:100%;border-collapse:collapse;font-size:12px;text-align:left">
+    <tr><th>元請け</th><th>顧客</th><th>ナンバー</th><th>区分</th><th>予定日時</th></tr>`;
+  tJ.forEach(j=>{
+    const t = j.tasks.find(t=>['pickup','delivery'].includes(STAGES.find(s=>s.id===t.stageId)?.code));
+    const code = STAGES.find(s=>s.id===t.stageId)?.code;
+    html += `<tr><td>${j.upstream}</td><td>${j.customerName}</td><td>${j.vehicleName.split('　')[1]||j.vehicleName}</td><td>${code==='pickup'?'引取':'納車'}</td><td>${fmtD(code==='pickup'?j.promisedPickup:j.promisedDelivery)}</td></tr>`;
+  });
+  const pw = window.open('','_blank');
+  pw.document.write(`<html><head><title>印刷</title><style>body{font-family:sans-serif;padding:20px}th,td{padding:8px}</style></head><body>${html}</body></html>`);
+  pw.document.close(); pw.focus(); setTimeout(()=>pw.print(),500);
+};
+
+// ── EVENTS BINDING ─────────────────────────
+function bindEvents(){
+  // Navigation
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setState({view:b.dataset.view})));
+  
+  // Actions
+  document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',(e)=>{
+    const act=b.dataset.action;
+    if(act==='new-hp') setState({modal:'newJob',newDiv:'hp'});
+    if(act==='new-bp') setState({modal:'newJob',newDiv:'bp'});
+    if(act==='close') setState({modal:null});
+    if(act==='set-deliv') document.getElementById('nj-dl').value=b.dataset.val;
+    if(act==='save-nj'){
+      const cid=document.getElementById('nj-cust').value;
+      const cname=cid?CUSTOMERS_DB.find(c=>c.id===cid).name:'新規顧客';
+      const veh=document.getElementById('nj-veh').value||'新規車両';
+      const up=document.getElementById('nj-up').value;
+      const pk=document.getElementById('nj-pk').value;
+      const dl=document.getElementById('nj-dl').value;
+      const div=STATE.newDiv;
+      const stgs=div==='bp'?BP_STAGES:HP_STAGES;
+      const tasks=stgs.map(s=>({id:`n_${Date.now()}_${s.id}`,stageId:s.id,status:'pending',assigneeId:document.getElementById('nj-ass').value||null,completedAt:null}));
+      STATE.jobs.push({id:`j${Date.now()}`,jobNumber:`#${div==='hp'?'3':'2'}0099`,customerName:cname,vehicleName:veh,div,priority:'normal',upstream:up,entryDate:isoDate(today),promisedPickup:pk,promisedDelivery:dl,tasks});
+      setState({modal:null}); showToast('受付を登録しました');
+    }
+    if(act==='save-jd'){
+      const j=STATE.selectedJob;
+      j.upstream=document.getElementById('jd-up').value;
+      j.promisedPickup=document.getElementById('jd-pk').value;
+      j.plannedWorkStart=document.getElementById('jd-ws').value;
+      j.plannedCompletion=document.getElementById('jd-ce').value;
+      j.promisedDelivery=document.getElementById('jd-dl').value;
+      j.estimateAmount=parseInt(document.getElementById('jd-ea').value)||0;
+      j.estimatePartsCost=parseInt(document.getElementById('jd-ep').value)||0;
+      setState({modal:null}); showToast('詳細情報を更新しました');
+    }
+  }));
+
+  // Details open
+  document.querySelectorAll('[data-ojob]').forEach(el=>el.addEventListener('click',(e)=>{
+    if(e.target.closest('[draggable]')) return; // Ignore if dragging
+    const j=STATE.jobs.find(x=>x.id===el.dataset.ojob);
+    if(j) setState({modal:'jobDetail',selectedJob:j});
+  }));
+
+  // Drag events binding
+  const kbArea = document.getElementById('kb-area');
+  if(kbArea){
+    kbArea.querySelectorAll('.kb-col').forEach(c=>{
+      c.addEventListener('dragover', window.allowDrop);
+      c.addEventListener('dragleave', window.dragLeave);
+      c.addEventListener('drop', window.drop);
+    });
+    kbArea.querySelectorAll('.kb-card').forEach(c=>{
+      c.addEventListener('dragstart', window.drag);
+    });
+  }
+
+  // Dependent dropdown (Customer -> Vehicle)
+  const custSel = document.getElementById('nj-cust');
+  if(custSel){
+    custSel.addEventListener('change', (e)=>{
+      const vs=VEHICLES_DB.filter(v=>v.customerId===e.target.value);
+      document.getElementById('nj-veh').innerHTML=vs.length?vs.map(v=>`<option value="${v.maker} ${v.model}　${v.plate}">${v.maker} ${v.model}　${v.plate}</option>`).join(''):'<option value="">車両データなし</option>';
+    });
+  }
+}
+
+// Boot
+initData();
+render();
+</script>
+</body>
+</html>

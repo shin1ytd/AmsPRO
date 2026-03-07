@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v3.2.1.1</title>
+<title>Ams PRO v4.0.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -871,7 +871,7 @@ function loginHTML(){
   const driverUsers=allUsers.filter(u=>u.role==='driver');
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
-    <div class="l-tag">NTA工程管理システム v3.1</div>
+    <div class="l-tag">NTA工程管理システム v4.0</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.2.1</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v4.0.3</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -998,7 +998,7 @@ function shellHTML(){
     <div class="${isKanbanView?'content no-pad':'content'}" id="mc">${viewHTML()}</div>
   </div>
 </div>
-${modalHTML()}`;
+${(typeof window!=='undefined' && typeof window.modalHTML==='function' ? window.modalHTML() : modalHTML())}`;
 }
 
 // ============================================================
@@ -1293,9 +1293,8 @@ function vKanbanDiv(div){
           const isHold=t.status==='hold';
           const isUrg=j.priority==='urgent';
           return`<div class="kb-card ${isUrg&&!isHold?'urg':''} ${isHold?'hold':''}" data-otask="${j.id}__${t.id}">
-            <div class="kc-num">${j.jobNumber}${div==='hp'&&j.subType?` <span style="font-size:8px;color:var(--txt3)">${subTypeLabel(j.subType)}</span>`:''}
-            </div>
-            <div class="kc-nm">${j.customerName}</div>
+            <div class="kc-num">${j.jobNumber}${div==='hp'&&j.subType?` <span style="font-size:8px;color:var(--txt3)">${subTypeLabel(j.subType)}</span>`:''}</div>
+            <div class="kc-nm">${j.customerName} ${upstreamBadge(j.upstream||'自受け')}</div>
             <div class="kc-veh">🚗 ${j.vehicleName.split('　')[0]}</div>
             <div class="kc-ft">
               <span class="kc-ass">${getUsers().find(u=>u.id===t.assigneeId)?.name.split(' ')[1]||'未割当'}</span>
@@ -2973,6 +2972,314 @@ render();
 })();
 </script>
 
+
+<script>
+// v4.0 patch: 車両検索バー / 今日の作業一覧 / 作業遅延アラート / 更新履歴
+(function(){
+  const VERSION_HISTORY = [
+    {version:'v2.0', date:'初版', changes:['工程管理の基本UI','HP/BP/引取り納車/顧客・車両/売上レポート/マスタ設定の基本構成']},
+    {version:'v2.3', date:'機能調整', changes:['「仕上がり確認」→「できばえ確認」','トースト通知の自動消去を安定化']},
+    {version:'v3.0', date:'大型改修', changes:['元請け・登録番号・詳細情報レイアウトの拡張','引取・納車カンバン、印刷、担当者未確定表示、顧客/車両管理の強化']},
+    {version:'v3.1', date:'不具合修正', changes:['BP/HPカンバンの「ボード/一覧」切替の補強']},
+    {version:'v3.2', date:'運用安定化', changes:['引取未完了車を引取側優先表示','予約段階車両の納車側表示抑制','当日完了の残置制御改善']},
+    {version:'v3.2.1', date:'切替修正', changes:['BP/HPカンバンの「ボード/一覧」切替を追加補強']},
+    {version:'v3.2.1.1', date:'表記調整', changes:['システム名称・バージョン表記を運用版に合わせて調整']},
+    {version:'v4.0', date:'機能追加', changes:['車両検索バーを追加','今日の作業一覧を追加','作業遅延アラートを追加','更新履歴表示を追加']},
+    {version:'v4.0.1', date:'不具合修正', changes:['検索バー・今日の作業一覧・作業遅延・履歴の重複表示を修正']},
+    {version:'v4.0.2', date:'不具合修正', changes:['BP / HPカンバン画面の元受け情報表示を復元']},
+    {version:'v4.0.3', date:'不具合修正', changes:['今日の作業一覧クリック時に無反応となり、画面がフリーズしたように見える不具合を修正','作業遅延・履歴も同じ原因で正常にモーダル表示されない問題を修正']}
+  ];
+
+  function injectV4Style(){
+    if(document.getElementById('v4-style')) return;
+    const style = document.createElement('style');
+    style.id='v4-style';
+    style.textContent = `
+      .v4-top-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+      .v4-search{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--bdr);border-radius:999px;padding:5px 10px;min-width:240px}
+      .v4-search input{border:none;background:transparent;outline:none;width:210px;font-size:12.5px;color:var(--txt)}
+      .v4-chip-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--bdr);background:#fff;color:var(--txt2);font-size:12px;font-weight:700;cursor:pointer}
+      .v4-chip-btn.alert{border-color:rgba(185,28,28,.2);background:rgba(185,28,28,.06);color:var(--red)}
+      .v4-chip-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:800}
+      .v4-modal-table{width:100%;border-collapse:collapse;font-size:12px}
+      .v4-modal-table th,.v4-modal-table td{border-bottom:1px solid var(--bdr);padding:8px 9px;text-align:left;vertical-align:top}
+      .v4-modal-table th{background:#eef2f8;color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+      .v4-mini{font-size:11px;color:var(--txt3)}
+      .v4-job-btn{padding:4px 8px;border:1px solid var(--bdr);background:#fff;border-radius:6px;font-size:11px;font-weight:700;color:var(--acc2);cursor:pointer}
+      @media (max-width:1024px){
+        .v4-top-tools{width:100%;order:2}
+        .v4-search{min-width:0;flex:1}
+        .v4-search input{width:100%}
+      }
+      @media (max-width:640px){
+        .v4-top-tools{gap:6px}
+        .v4-search{width:100%}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function qNorm(v){
+    return String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
+  }
+  function plateOfSafe(j){
+    try{
+      if(typeof plateOf==='function') return j.plateNumber||plateOf(j.vehicleName)||'';
+    }catch(e){}
+    return j.plateNumber||'';
+  }
+  function jobMatchesVehicleSearch(j){
+    const q = qNorm(STATE.vehicleSearch||'');
+    if(!q) return true;
+    const assignees = (j.tasks||[]).map(t=>{
+      try{return (getUserById(t.assigneeId)?.name)||'';}catch(e){return '';}
+    }).join(' ');
+    const blob = qNorm([
+      j.jobNumber,j.customerName,j.vehicleName,j.plateNumber,plateOfSafe(j),j.upstream,j.subType,assignees,j.note
+    ].join(' '));
+    return blob.includes(q);
+  }
+  function withFilteredJobs(fn){
+    const q = qNorm(STATE.vehicleSearch||'');
+    if(!q) return fn();
+    const original = STATE.jobs;
+    STATE.jobs = (STATE.jobs||[]).filter(jobMatchesVehicleSearch);
+    try{
+      return fn();
+    }finally{
+      STATE.jobs = original;
+    }
+  }
+  function isDeliveryCompleted(job){
+    const d = (job.tasks||[]).find(t=>{
+      try{return STAGES.find(s=>s.id===t.stageId)?.code==='delivery';}catch(e){return false;}
+    });
+    return !!(d && d.status==='completed');
+  }
+  function currentTaskForDelay(job){
+    try{return getCurTask(job);}catch(e){return (job.tasks||[]).find(t=>t.status!=='completed')||job.tasks?.[0]||null;}
+  }
+  function isDelayedJob(job){
+    const cur = currentTaskForDelay(job);
+    const promised = String(job.promisedDelivery||'');
+    const eta = String(cur?.finishEta||'');
+    const plannedComplete = String(job.plannedCompleteDate||'');
+    if(!isDeliveryCompleted(job) && promised && promised < T) return true;
+    if(cur && cur.status !== 'completed' && eta && eta < T) return true;
+    if(!isDeliveryCompleted(job) && plannedComplete && plannedComplete < T) return true;
+    return false;
+  }
+  function getDelayedJobs(){
+    return (STATE.jobs||[]).filter(j=>jobMatchesVehicleSearch(j)).filter(isDelayedJob).sort((a,b)=>{
+      return String(a.promisedDelivery||'').localeCompare(String(b.promisedDelivery||'')) || String(a.jobNumber||'').localeCompare(String(b.jobNumber||''));
+    });
+  }
+  function getTodayWorkJobs(){
+    return (STATE.jobs||[]).filter(j=>jobMatchesVehicleSearch(j)).filter(j=>{
+      const cur = currentTaskForDelay(j);
+      const stageCode = (()=>{ try{return STAGES.find(s=>s.id===cur?.stageId)?.code||'';}catch(e){return '';} })();
+      return [
+        j.plannedWorkDate, j.plannedPickupDate, j.plannedDeliveryDate, j.promisedDelivery,
+        cur?.finishEta
+      ].includes(T) || (cur && ['in_progress','hold','ready'].includes(cur.status) && ['work','bankin','painting','mechanical','polishing','inspection','quality_check','shaken_insp','pickup','delivery'].includes(stageCode));
+    }).sort((a,b)=>{
+      const da = String(a.plannedWorkDate||a.promisedDelivery||'');
+      const db = String(b.plannedWorkDate||b.promisedDelivery||'');
+      return da.localeCompare(db) || String(a.jobNumber||'').localeCompare(String(b.jobNumber||''));
+    });
+  }
+  function divLabel(d){ return d==='hp'?'HP':'BP'; }
+  function curStageNameSafe(job){ try{return getCurStageName(job)||'—';}catch(e){return '—';} }
+  function assigneeNameSafe(job){
+    const cur = currentTaskForDelay(job);
+    try{return getUserById(cur?.assigneeId)?.name||'未割当';}catch(e){return '未割当';}
+  }
+  function delayReason(job){
+    const cur = currentTaskForDelay(job);
+    if(job.promisedDelivery && job.promisedDelivery < T && !isDeliveryCompleted(job)) return '納車予定超過';
+    if(cur?.finishEta && cur.finishEta < T) return '工程予定超過';
+    if(job.plannedCompleteDate && job.plannedCompleteDate < T && !isDeliveryCompleted(job)) return '完了予定超過';
+    return '要確認';
+  }
+
+  const _shellHTML = window.shellHTML;
+  if(typeof _shellHTML==='function'){
+    window.shellHTML = function(){
+      injectV4Style();
+      let html = _shellHTML();
+      const delayedCount = getDelayedJobs().length;
+      const searchTools = `
+        <div class="v4-top-tools">
+          <label class="v4-search" title="車両・登録番号・顧客・案件番号・元請けで検索">
+            <span>🔎</span>
+            <input id="vehicle-search" value="${String(STATE.vehicleSearch||'').replace(/"/g,'&quot;')}" placeholder="車両 / 登録番号 / 顧客 / 案件番号 / 元請けを検索">
+          </label>
+          <button class="v4-chip-btn" id="today-work-btn">🗓 今日の作業一覧</button>
+          <button class="v4-chip-btn ${delayedCount?'alert':''}" id="delay-alert-btn">🚨 作業遅延${delayedCount?`<span class="v4-chip-badge">${delayedCount}</span>`:''}</button>
+          <button class="v4-chip-btn" id="version-history-btn">🕘 履歴</button>
+        </div>`;
+      html = html.replace('<div class="tb-right">', `${searchTools}<div class="tb-right">`);
+      return html;
+    };
+  }
+
+  ['vKanbanDiv','vKanbanTransfer','vJobList','vMyView'].forEach(name=>{
+    const oldFn = window[name];
+    if(typeof oldFn==='function'){
+      window[name]=function(){
+        return withFilteredJobs(()=>oldFn.apply(this, arguments));
+      };
+    }
+  });
+
+  const _modalHTML = window.modalHTML;
+  window.modalHTML = function(){
+    if(STATE.modal==='todayWork') return mTodayWork();
+    if(STATE.modal==='delayAlert') return mDelayAlert();
+    if(STATE.modal==='versionHistory') return mVersionHistory();
+    return typeof _modalHTML==='function' ? _modalHTML() : '';
+  };
+
+  function mTodayWork(){
+    const rows = getTodayWorkJobs();
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:980px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🗓 今日の作業一覧</div><div class="v4-mini">${new Date().toLocaleDateString('ja-JP')} 時点 / 検索条件反映済み</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          ${rows.length?`<table class="v4-modal-table">
+            <thead><tr><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>元請け</th><th>現在工程</th><th>担当</th><th>予定</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(j=>`<tr>
+                <td>${divTag(j.div)} <span class="v4-mini">${j.div==='hp'?(subTypeLabel(j.subType)||''):'板金'}</span></td>
+                <td class="td-m">${j.jobNumber}</td>
+                <td style="font-weight:700">${j.customerName}</td>
+                <td>${vehShort(j.vehicleName)}<div class="v4-mini">${plateOfSafe(j)}</div></td>
+                <td>${upstreamBadge(j.upstream||'自受け')}</td>
+                <td>${curStageNameSafe(j)}</td>
+                <td>${assigneeNameSafe(j)}</td>
+                <td>${fmtD(j.plannedWorkDate||j.promisedDelivery||currentTaskForDelay(j)?.finishEta||'')}</td>
+                <td><button class="v4-job-btn" data-openjob="${j.id}">詳細</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`:`<div class="alert info">本日の対象案件はありません。</div>`}
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  function mDelayAlert(){
+    const rows = getDelayedJobs();
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:980px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🚨 作業遅延アラート</div><div class="v4-mini">検索条件反映済み / 納車予定・完了予定・工程予定の超過を表示</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          ${rows.length?`<div class="alert danger">遅延案件 ${rows.length}件 を検出しています。先に潰すべき火種です。</div>
+          <table class="v4-modal-table">
+            <thead><tr><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>現在工程</th><th>担当</th><th>理由</th><th>納車予定</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(j=>`<tr>
+                <td>${divTag(j.div)}</td>
+                <td class="td-m">${j.jobNumber}</td>
+                <td style="font-weight:700">${j.customerName}</td>
+                <td>${vehShort(j.vehicleName)}<div class="v4-mini">${plateOfSafe(j)}</div></td>
+                <td>${curStageNameSafe(j)}</td>
+                <td>${assigneeNameSafe(j)}</td>
+                <td><span class="bx bx-r">${delayReason(j)}</span></td>
+                <td>${fmtD(j.promisedDelivery||j.plannedCompleteDate||'')}</td>
+                <td><button class="v4-job-btn" data-openjob="${j.id}">詳細</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`:`<div class="alert success">現在、遅延アラート対象案件はありません。</div>`}
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  function mVersionHistory(){
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:860px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🕘 バージョン履歴</div><div class="v4-mini">Ams PRO の変更履歴</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          <table class="v4-modal-table">
+            <thead><tr><th style="width:120px">Version</th><th style="width:110px">時期</th><th>変更内容</th></tr></thead>
+            <tbody>
+              ${VERSION_HISTORY.map(v=>`<tr>
+                <td style="font-weight:800;color:var(--acc2)">${v.version}</td>
+                <td>${v.date}</td>
+                <td>${v.changes.map(c=>`<div style="margin:0 0 4px 0">- ${c}</div>`).join('')}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  const _bindAll = window.bindAll;
+  if(typeof _bindAll==='function'){
+    window.bindAll = function(){
+      _bindAll.apply(this, arguments);
+
+      document.getElementById('vehicle-search')?.addEventListener('input', function(e){
+        setState({vehicleSearch:e.target.value});
+      });
+
+      document.getElementById('today-work-btn')?.addEventListener('click', function(){
+        setState({modal:'todayWork'});
+      });
+      document.getElementById('delay-alert-btn')?.addEventListener('click', function(){
+        setState({modal:'delayAlert'});
+      });
+      document.getElementById('version-history-btn')?.addEventListener('click', function(){
+        setState({modal:'versionHistory'});
+      });
+
+      document.querySelectorAll('[data-openjob]').forEach(el=>el.addEventListener('click', function(e){
+        e.stopPropagation();
+        const j=(STATE.jobs||[]).find(x=>x.id===el.dataset.openjob);
+        if(j) setState({selectedJob:j,modal:'jobDetail',jobDetailTab:'flow'});
+      }));
+    };
+  }
+
+  // keep title in sync
+  document.title='Ams PRO v4.0.3';
+})();
+</script>
+
+
+<script>
+// v4.0.1 patch: duplicate utility controls guard
+(function(){
+  function keepFirstById(id){
+    var nodes=document.querySelectorAll('#'+CSS.escape(id));
+    for(var i=1;i<nodes.length;i++){
+      if(nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+    }
+  }
+  function run(){
+    ['global-search-btn','today-work-btn','delay-alert-btn','history-btn'].forEach(keepFirstById);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',run,{once:true});
+  }else{
+    run();
+  }
+})();
+</script>
+
 </body></html>`;
       const w=window.open('','_blank'); if(!w) return; w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>w.print(),250);
     });
@@ -3028,7 +3335,7 @@ render();
   };
 
   normalizeMastersAndJobs();
-  document.title='Ams PRO v3.2.1';
+  document.title='Ams PRO v4.0.3';
   render();
 })();
 </script>
@@ -3072,6 +3379,311 @@ render();
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(syncKanbanToggleUI, 0);
   });
+})();
+</script>
+
+
+<script>
+// v4.0 patch: 車両検索バー / 今日の作業一覧 / 作業遅延アラート / 更新履歴
+(function(){
+  const VERSION_HISTORY = [
+    {version:'v2.0', date:'初版', changes:['工程管理の基本UI','HP/BP/引取り納車/顧客・車両/売上レポート/マスタ設定の基本構成']},
+    {version:'v2.3', date:'機能調整', changes:['「仕上がり確認」→「できばえ確認」','トースト通知の自動消去を安定化']},
+    {version:'v3.0', date:'大型改修', changes:['元請け・登録番号・詳細情報レイアウトの拡張','引取・納車カンバン、印刷、担当者未確定表示、顧客/車両管理の強化']},
+    {version:'v3.1', date:'不具合修正', changes:['BP/HPカンバンの「ボード/一覧」切替の補強']},
+    {version:'v3.2', date:'運用安定化', changes:['引取未完了車を引取側優先表示','予約段階車両の納車側表示抑制','当日完了の残置制御改善']},
+    {version:'v3.2.1', date:'切替修正', changes:['BP/HPカンバンの「ボード/一覧」切替を追加補強']},
+    {version:'v3.2.1.1', date:'表記調整', changes:['システム名称・バージョン表記を運用版に合わせて調整']},
+    {version:'v4.0', date:'今回', changes:['車両検索バーを追加','今日の作業一覧を追加','作業遅延アラートを追加','更新履歴表示を追加']}
+  ];
+
+  function injectV4Style(){
+    if(document.getElementById('v4-style')) return;
+    const style = document.createElement('style');
+    style.id='v4-style';
+    style.textContent = `
+      .v4-top-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+      .v4-search{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--bdr);border-radius:999px;padding:5px 10px;min-width:240px}
+      .v4-search input{border:none;background:transparent;outline:none;width:210px;font-size:12.5px;color:var(--txt)}
+      .v4-chip-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--bdr);background:#fff;color:var(--txt2);font-size:12px;font-weight:700;cursor:pointer}
+      .v4-chip-btn.alert{border-color:rgba(185,28,28,.2);background:rgba(185,28,28,.06);color:var(--red)}
+      .v4-chip-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:800}
+      .v4-modal-table{width:100%;border-collapse:collapse;font-size:12px}
+      .v4-modal-table th,.v4-modal-table td{border-bottom:1px solid var(--bdr);padding:8px 9px;text-align:left;vertical-align:top}
+      .v4-modal-table th{background:#eef2f8;color:var(--txt3);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+      .v4-mini{font-size:11px;color:var(--txt3)}
+      .v4-job-btn{padding:4px 8px;border:1px solid var(--bdr);background:#fff;border-radius:6px;font-size:11px;font-weight:700;color:var(--acc2);cursor:pointer}
+      @media (max-width:1024px){
+        .v4-top-tools{width:100%;order:2}
+        .v4-search{min-width:0;flex:1}
+        .v4-search input{width:100%}
+      }
+      @media (max-width:640px){
+        .v4-top-tools{gap:6px}
+        .v4-search{width:100%}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function qNorm(v){
+    return String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
+  }
+  function plateOfSafe(j){
+    try{
+      if(typeof plateOf==='function') return j.plateNumber||plateOf(j.vehicleName)||'';
+    }catch(e){}
+    return j.plateNumber||'';
+  }
+  function jobMatchesVehicleSearch(j){
+    const q = qNorm(STATE.vehicleSearch||'');
+    if(!q) return true;
+    const assignees = (j.tasks||[]).map(t=>{
+      try{return (getUserById(t.assigneeId)?.name)||'';}catch(e){return '';}
+    }).join(' ');
+    const blob = qNorm([
+      j.jobNumber,j.customerName,j.vehicleName,j.plateNumber,plateOfSafe(j),j.upstream,j.subType,assignees,j.note
+    ].join(' '));
+    return blob.includes(q);
+  }
+  function withFilteredJobs(fn){
+    const q = qNorm(STATE.vehicleSearch||'');
+    if(!q) return fn();
+    const original = STATE.jobs;
+    STATE.jobs = (STATE.jobs||[]).filter(jobMatchesVehicleSearch);
+    try{
+      return fn();
+    }finally{
+      STATE.jobs = original;
+    }
+  }
+  function isDeliveryCompleted(job){
+    const d = (job.tasks||[]).find(t=>{
+      try{return STAGES.find(s=>s.id===t.stageId)?.code==='delivery';}catch(e){return false;}
+    });
+    return !!(d && d.status==='completed');
+  }
+  function currentTaskForDelay(job){
+    try{return getCurTask(job);}catch(e){return (job.tasks||[]).find(t=>t.status!=='completed')||job.tasks?.[0]||null;}
+  }
+  function isDelayedJob(job){
+    const cur = currentTaskForDelay(job);
+    const promised = String(job.promisedDelivery||'');
+    const eta = String(cur?.finishEta||'');
+    const plannedComplete = String(job.plannedCompleteDate||'');
+    if(!isDeliveryCompleted(job) && promised && promised < T) return true;
+    if(cur && cur.status !== 'completed' && eta && eta < T) return true;
+    if(!isDeliveryCompleted(job) && plannedComplete && plannedComplete < T) return true;
+    return false;
+  }
+  function getDelayedJobs(){
+    return (STATE.jobs||[]).filter(j=>jobMatchesVehicleSearch(j)).filter(isDelayedJob).sort((a,b)=>{
+      return String(a.promisedDelivery||'').localeCompare(String(b.promisedDelivery||'')) || String(a.jobNumber||'').localeCompare(String(b.jobNumber||''));
+    });
+  }
+  function getTodayWorkJobs(){
+    return (STATE.jobs||[]).filter(j=>jobMatchesVehicleSearch(j)).filter(j=>{
+      const cur = currentTaskForDelay(j);
+      const stageCode = (()=>{ try{return STAGES.find(s=>s.id===cur?.stageId)?.code||'';}catch(e){return '';} })();
+      return [
+        j.plannedWorkDate, j.plannedPickupDate, j.plannedDeliveryDate, j.promisedDelivery,
+        cur?.finishEta
+      ].includes(T) || (cur && ['in_progress','hold','ready'].includes(cur.status) && ['work','bankin','painting','mechanical','polishing','inspection','quality_check','shaken_insp','pickup','delivery'].includes(stageCode));
+    }).sort((a,b)=>{
+      const da = String(a.plannedWorkDate||a.promisedDelivery||'');
+      const db = String(b.plannedWorkDate||b.promisedDelivery||'');
+      return da.localeCompare(db) || String(a.jobNumber||'').localeCompare(String(b.jobNumber||''));
+    });
+  }
+  function divLabel(d){ return d==='hp'?'HP':'BP'; }
+  function curStageNameSafe(job){ try{return getCurStageName(job)||'—';}catch(e){return '—';} }
+  function assigneeNameSafe(job){
+    const cur = currentTaskForDelay(job);
+    try{return getUserById(cur?.assigneeId)?.name||'未割当';}catch(e){return '未割当';}
+  }
+  function delayReason(job){
+    const cur = currentTaskForDelay(job);
+    if(job.promisedDelivery && job.promisedDelivery < T && !isDeliveryCompleted(job)) return '納車予定超過';
+    if(cur?.finishEta && cur.finishEta < T) return '工程予定超過';
+    if(job.plannedCompleteDate && job.plannedCompleteDate < T && !isDeliveryCompleted(job)) return '完了予定超過';
+    return '要確認';
+  }
+
+  const _shellHTML = window.shellHTML;
+  if(typeof _shellHTML==='function'){
+    window.shellHTML = function(){
+      injectV4Style();
+      let html = _shellHTML();
+      const delayedCount = getDelayedJobs().length;
+      const searchTools = `
+        <div class="v4-top-tools">
+          <label class="v4-search" title="車両・登録番号・顧客・案件番号・元請けで検索">
+            <span>🔎</span>
+            <input id="vehicle-search" value="${String(STATE.vehicleSearch||'').replace(/"/g,'&quot;')}" placeholder="車両 / 登録番号 / 顧客 / 案件番号 / 元請けを検索">
+          </label>
+          
+          
+          <button class="v4-chip-btn" id="version-history-btn">🕘 履歴</button>
+        </div>`;
+      html = html.replace('<div class="tb-right">', `${searchTools}<div class="tb-right">`);
+      return html;
+    };
+  }
+
+  ['vKanbanDiv','vKanbanTransfer','vJobList','vMyView'].forEach(name=>{
+    const oldFn = window[name];
+    if(typeof oldFn==='function'){
+      window[name]=function(){
+        return withFilteredJobs(()=>oldFn.apply(this, arguments));
+      };
+    }
+  });
+
+  const _modalHTML = window.modalHTML;
+  window.modalHTML = function(){
+    if(STATE.modal==='todayWork') return mTodayWork();
+    if(STATE.modal==='delayAlert') return mDelayAlert();
+    if(STATE.modal==='versionHistory') return mVersionHistory();
+    return typeof _modalHTML==='function' ? _modalHTML() : '';
+  };
+
+  function mTodayWork(){
+    const rows = getTodayWorkJobs();
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:980px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🗓 今日の作業一覧</div><div class="v4-mini">${new Date().toLocaleDateString('ja-JP')} 時点 / 検索条件反映済み</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          ${rows.length?`<table class="v4-modal-table">
+            <thead><tr><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>元請け</th><th>現在工程</th><th>担当</th><th>予定</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(j=>`<tr>
+                <td>${divTag(j.div)} <span class="v4-mini">${j.div==='hp'?(subTypeLabel(j.subType)||''):'板金'}</span></td>
+                <td class="td-m">${j.jobNumber}</td>
+                <td style="font-weight:700">${j.customerName}</td>
+                <td>${vehShort(j.vehicleName)}<div class="v4-mini">${plateOfSafe(j)}</div></td>
+                <td>${upstreamBadge(j.upstream||'自受け')}</td>
+                <td>${curStageNameSafe(j)}</td>
+                <td>${assigneeNameSafe(j)}</td>
+                <td>${fmtD(j.plannedWorkDate||j.promisedDelivery||currentTaskForDelay(j)?.finishEta||'')}</td>
+                <td><button class="v4-job-btn" data-openjob="${j.id}">詳細</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`:`<div class="alert info">本日の対象案件はありません。</div>`}
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  function mDelayAlert(){
+    const rows = getDelayedJobs();
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:980px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🚨 作業遅延アラート</div><div class="v4-mini">検索条件反映済み / 納車予定・完了予定・工程予定の超過を表示</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          ${rows.length?`<div class="alert danger">遅延案件 ${rows.length}件 を検出しています。先に潰すべき火種です。</div>
+          <table class="v4-modal-table">
+            <thead><tr><th>区分</th><th>案件番号</th><th>顧客</th><th>車両</th><th>現在工程</th><th>担当</th><th>理由</th><th>納車予定</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(j=>`<tr>
+                <td>${divTag(j.div)}</td>
+                <td class="td-m">${j.jobNumber}</td>
+                <td style="font-weight:700">${j.customerName}</td>
+                <td>${vehShort(j.vehicleName)}<div class="v4-mini">${plateOfSafe(j)}</div></td>
+                <td>${curStageNameSafe(j)}</td>
+                <td>${assigneeNameSafe(j)}</td>
+                <td><span class="bx bx-r">${delayReason(j)}</span></td>
+                <td>${fmtD(j.promisedDelivery||j.plannedCompleteDate||'')}</td>
+                <td><button class="v4-job-btn" data-openjob="${j.id}">詳細</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`:`<div class="alert success">現在、遅延アラート対象案件はありません。</div>`}
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  function mVersionHistory(){
+    return `<div class="mbk" id="mbk">
+      <div class="mo" style="max-width:860px">
+        <div class="mo-hdr">
+          <div><div class="mo-ttl">🕘 バージョン履歴</div><div class="v4-mini">Ams PRO の変更履歴</div></div>
+          <button class="mo-x" id="mc-x">×</button>
+        </div>
+        <div class="mo-body">
+          <table class="v4-modal-table">
+            <thead><tr><th style="width:120px">Version</th><th style="width:110px">時期</th><th>変更内容</th></tr></thead>
+            <tbody>
+              ${VERSION_HISTORY.map(v=>`<tr>
+                <td style="font-weight:800;color:var(--acc2)">${v.version}</td>
+                <td>${v.date}</td>
+                <td>${v.changes.map(c=>`<div style="margin:0 0 4px 0">- ${c}</div>`).join('')}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="mo-ft"><button class="btn btn-n" id="mc-x2">閉じる</button></div>
+      </div>
+    </div>`;
+  }
+
+  const _bindAll = window.bindAll;
+  if(typeof _bindAll==='function'){
+    window.bindAll = function(){
+      _bindAll.apply(this, arguments);
+
+      document.getElementById('vehicle-search')?.addEventListener('input', function(e){
+        setState({vehicleSearch:e.target.value});
+      });
+
+      document.getElementById('today-work-btn')?.addEventListener('click', function(){
+        setState({modal:'todayWork'});
+      });
+      document.getElementById('delay-alert-btn')?.addEventListener('click', function(){
+        setState({modal:'delayAlert'});
+      });
+      document.getElementById('version-history-btn')?.addEventListener('click', function(){
+        setState({modal:'versionHistory'});
+      });
+
+      document.querySelectorAll('[data-openjob]').forEach(el=>el.addEventListener('click', function(e){
+        e.stopPropagation();
+        const j=(STATE.jobs||[]).find(x=>x.id===el.dataset.openjob);
+        if(j) setState({selectedJob:j,modal:'jobDetail',jobDetailTab:'flow'});
+      }));
+    };
+  }
+
+  // keep title in sync
+  document.title='Ams PRO v4.0.3';
+})();
+</script>
+
+
+<script>
+// v4.0.1 patch: duplicate utility controls guard
+(function(){
+  function keepFirstById(id){
+    var nodes=document.querySelectorAll('#'+CSS.escape(id));
+    for(var i=1;i<nodes.length;i++){
+      if(nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+    }
+  }
+  function run(){
+    ['global-search-btn','today-work-btn','delay-alert-btn','history-btn'].forEach(keepFirstById);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',run,{once:true});
+  }else{
+    run();
+  }
 })();
 </script>
 

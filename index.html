@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v3.1</title>
+<title>Ams PRO v3.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.1</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.2</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -2474,19 +2474,36 @@ render();
   }
   function transferGroups(){
     const pickups = [], deliveries = [], unresolved=[], done=[];
-    transferBucketJobs('pickup').forEach(j=>{
-      const t=taskByCode(j,'pickup');
-      const planned=j.plannedPickupDate||'';
-      if(t.status==='completed' && sameDate(isoDate(t.completedAt),T)) done.push({j,t});
-      else if(planned===T || (planned && planned<T && t.status!=='completed')) pickups.push({j,t});
-      else if(!planned && t.status!=='completed') unresolved.push({j,t});
-    });
-    transferBucketJobs('delivery').forEach(j=>{
-      const t=taskByCode(j,'delivery');
-      const planned=j.plannedDeliveryDate||'';
-      if(t.status==='completed' && sameDate(isoDate(t.completedAt),T)) done.push({j,t});
-      else if(planned===T || (planned && planned<T && t.status!=='completed')) deliveries.push({j,t});
-      else if(!planned && t.status!=='completed') unresolved.push({j,t});
+    (STATE.jobs||[]).forEach(j=>{
+      const pickup=taskByCode(j,'pickup');
+      const delivery=taskByCode(j,'delivery');
+
+      // 1) 引取が未完了なら、必ず引取側を優先表示する
+      //    予約段階の案件もここに含まれるため、納車側には出さない
+      if(pickup && pickup.status!=='completed'){
+        const planned=j.plannedPickupDate||'';
+        if(planned===T || (planned && planned<T)) pickups.push({j,t:pickup});
+        else if(!planned) unresolved.push({j,t:pickup});
+        return;
+      }
+
+      // 2) 引取完了後のみ納車側に出す
+      if(delivery && delivery.status!=='completed'){
+        const planned=j.plannedDeliveryDate||'';
+        if(planned===T || (planned && planned<T)) deliveries.push({j,t:delivery});
+        else if(!planned) unresolved.push({j,t:delivery});
+        return;
+      }
+
+      // 3) 当日完了分は当日だけ残す。ただし1案件1表示にするため最新の納引タスクのみ採用
+      const completedToday=[pickup,delivery]
+        .filter(Boolean)
+        .filter(t=>t.status==='completed' && t.completedAt && sameDate(isoDate(t.completedAt),T))
+        .sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt));
+
+      if(completedToday.length){
+        done.push({j,t:completedToday[0]});
+      }
     });
     return {pickups, deliveries, unresolved, done};
   }
@@ -2969,7 +2986,7 @@ render();
   };
 
   normalizeMastersAndJobs();
-  document.title='Ams PRO v3';
+  document.title='Ams PRO v3.2';
   render();
 })();
 </script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v2.2</title>
+<title>Ams PRO v2.2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -902,17 +902,19 @@ function getKpiTarget(period,div){
   }),{salesTarget:0,profitTarget:0,countTarget:0});
 }
 function updateTask(jobId,taskId,changes,clientVer){
-  let conflict=null;
   const jobs=STATE.jobs.map(j=>{
     if(j.id!==jobId)return j;
     return{...j,tasks:j.tasks.map(t=>{
       if(t.id!==taskId)return t;
-      if(t.version!==clientVer){conflict={task:{...t},attempted:changes,clientVer};return t;}
-      return{...t,...changes,version:t.version+1};
+      // 競合ダイアログは出さず、常に最新versionに対して上書き保存する
+      // （このHTML版は単一ブラウザ運用前提のため、HTTP409相当の表示を抑止）
+      const nextVersion=(typeof t.version==='number'?t.version:1)+1;
+      return{...t,...changes,version:nextVersion};
     })};
   });
-  if(conflict){setState({jobs,conflictData:conflict,selectedJob:jobs.find(j=>j.id===jobId),modal:'conflict'});return false;}
-  setState({jobs});return true;
+  const selected=jobs.find(j=>j.id===jobId)||null;
+  setState({jobs,selectedJob:selected,conflictData:null,modal:STATE.modal==='conflict'?null:STATE.modal});
+  return true;
 }
 function updateJob(jobId,changes){
   const jobs=STATE.jobs.map(j=>j.id===jobId?{...j,...changes,version:(j.version||1)+1}:j);

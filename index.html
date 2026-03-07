@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v3.0</title>
+<title>Ams PRO v3.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -871,7 +871,7 @@ function loginHTML(){
   const driverUsers=allUsers.filter(u=>u.role==='driver');
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
-    <div class="l-tag">NTA工程管理システム v3.0</div>
+    <div class="l-tag">NTA工程管理システム v3.1</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -963,8 +963,8 @@ function shellHTML(){
   const isKanbanView=['kanban','bp_kanban','hp_kanban'].includes(view);
   const kanbanToggle=isKanbanView?`
     <div class="tog-grp">
-      <button class="tog-btn ${STATE.kanbanMode==='scroll'?'on':''}" id="kb-tog-scroll">⬌ ボード</button>
-      <button class="tog-btn ${STATE.kanbanMode==='fit'?'on':''}" id="kb-tog-fit">⊞ 一覧</button>
+      <button class="tog-btn ${STATE.kanbanMode==='scroll'?'on':''}" id="kb-tog-scroll" data-kbmode="scroll">⬌ ボード</button>
+      <button class="tog-btn ${STATE.kanbanMode==='fit'?'on':''}" id="kb-tog-fit" data-kbmode="fit">⊞ 一覧</button>
     </div>`:'';
 
   const divColor=user.div==='hp'?'var(--hp)':user.div==='bp'?'var(--bp)':'#374151';
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">NTA工程管理 v3.0</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v3.1</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -1984,6 +1984,15 @@ function bindAll(){
 
   document.getElementById('kb-tog-scroll')?.addEventListener('click',()=>setState({kanbanMode:'scroll'}));
   document.getElementById('kb-tog-fit')?.addEventListener('click',()=>setState({kanbanMode:'fit'}));
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-kbmode]');
+    if(!btn)return;
+    const mode=btn.dataset.kbmode;
+    if(mode==='scroll'||mode==='fit'){
+      e.preventDefault();
+      if(STATE.kanbanMode!==mode)setState({kanbanMode:mode});
+    }
+  });
 
   const openQR=()=>setState({modal:'qr',qrScanned:null});
   document.getElementById('qr-btn')?.addEventListener('click',openQR);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v2.2.2</title>
+<title>Ams PRO v2.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -140,20 +140,6 @@ tr:hover td{background:#eef4ff}
 .kb-fit-table th{background:#eef2f8;color:var(--txt3);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;text-align:left;border-bottom:2px solid var(--bdr);white-space:nowrap;position:sticky;top:0;z-index:2}
 .kb-fit-table td{padding:5px 8px;border-bottom:1px solid var(--bdr);vertical-align:middle}
 .kb-fit-table tr:hover td{background:#eef4ff;cursor:pointer}
-
-@media print{
-  body{background:#fff!important;color:#111!important;font-size:11px;overflow:visible!important}
-  .print-page{padding:0;margin:0}
-  .print-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:6px}
-  .print-title{font-size:18px;font-weight:800}
-  .print-sub{font-size:11px;color:#444}
-  .print-group{margin:14px 0 18px}
-  .print-group-title{font-size:14px;font-weight:800;margin-bottom:6px;padding:4px 8px;background:#f3f4f6;border-left:4px solid #1a56db}
-  .print-table{width:100%;border-collapse:collapse;font-size:10px}
-  .print-table th,.print-table td{border:1px solid #999;padding:4px 6px;vertical-align:top}
-  .print-table th{background:#f3f4f6;font-weight:800}
-  .print-note{margin-top:8px;font-size:10px;color:#555}
-}
 
 /* STATUS BUTTONS */
 .st-grp{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0}
@@ -500,8 +486,6 @@ const nextMon=()=>{const d=new Date();const dd=d.getDay();d.setDate(d.getDate()+
 const pad2=n=>String(n).padStart(2,'0');
 const isoDateTimeLocal=d=>{const x=new Date(d);return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}T${pad2(x.getHours())}:${pad2(x.getMinutes())}`};
 const fmtDT=d=>d?new Date(d).toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'未定';
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
-const fmtPrintDT=d=>d?new Date(d).toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'未定';
 const addDT=(days,hour=9,min=0)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(hour,min,0,0);return isoDateTimeLocal(d)};
 const plateFromVehicle=v=>{const parts=String(v||'').split('　');return parts[1]||''};
 const T=isoDate(today);
@@ -902,19 +886,17 @@ function getKpiTarget(period,div){
   }),{salesTarget:0,profitTarget:0,countTarget:0});
 }
 function updateTask(jobId,taskId,changes,clientVer){
+  let conflict=null;
   const jobs=STATE.jobs.map(j=>{
     if(j.id!==jobId)return j;
     return{...j,tasks:j.tasks.map(t=>{
       if(t.id!==taskId)return t;
-      // 競合ダイアログは出さず、常に最新versionに対して上書き保存する
-      // （このHTML版は単一ブラウザ運用前提のため、HTTP409相当の表示を抑止）
-      const nextVersion=(typeof t.version==='number'?t.version:1)+1;
-      return{...t,...changes,version:nextVersion};
+      if(t.version!==clientVer){conflict={task:{...t},attempted:changes,clientVer};return t;}
+      return{...t,...changes,version:t.version+1};
     })};
   });
-  const selected=jobs.find(j=>j.id===jobId)||null;
-  setState({jobs,selectedJob:selected,conflictData:null,modal:STATE.modal==='conflict'?null:STATE.modal});
-  return true;
+  if(conflict){setState({jobs,conflictData:conflict,selectedJob:jobs.find(j=>j.id===jobId),modal:'conflict'});return false;}
+  setState({jobs});return true;
 }
 function updateJob(jobId,changes){
   const jobs=STATE.jobs.map(j=>j.id===jobId?{...j,...changes,version:(j.version||1)+1}:j);
@@ -963,7 +945,7 @@ function loginHTML(){
   const driverUsers=allUsers.filter(u=>u.role==='driver');
   return`<div class="login-bg"><div class="login-box">
     <div class="l-brand">🔧 Ams PRO</div>
-    <div class="l-tag">自動車工程管理システム v2.2</div>
+    <div class="l-tag">自動車工程管理システム v2.3</div>
     <div class="fg"><label class="flbl">メールアドレス</label>
       <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
     <div class="fg"><label class="flbl">パスワード</label>
@@ -1072,7 +1054,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v2.2</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v2.3</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -1197,93 +1179,144 @@ function vDashboard(div){
 }
 
 // ── KANBAN TRANSFER（引取り・納車統合） ──────────────────────────────────────────
-function vKanbanTransfer(){
-  const transferJobs=STATE.jobs.filter(j=>{
-    const reservation=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
-    const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
-    const delivery=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
-    return reservation||pickup||delivery;
-  });
-  const groups=[
-    {key:'pickup',label:'🚗 引取り予定',when:'pickupPlannedAt'},
-    {key:'delivery',label:'📦 納車予定',when:'deliveryPlannedAt'},
-    {key:'undecided',label:'🗂 未定案件',when:null}
-  ];
-  const getTransferTask=(j,type)=>{
-    if(type==='pickup'){
-      const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
-      if(pickup)return pickup;
-      return j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
-    }
-    if(type==='delivery') return j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
-    return j.tasks.find(t=>{const c=STAGES.find(s=>s.id===t.stageId)?.code;return (c==='reservation'||c==='pickup'||c==='delivery')&&t.status!=='completed';});
+function getTransferTaskForType(job,type){
+  if(type==='pickup'){
+    const reservation=job.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
+    if(reservation)return reservation;
+    return job.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed')||null;
+  }
+  if(type==='delivery'){
+    return job.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed')||null;
+  }
+  return null;
+}
+function getTransferBoardData(){
+  const transferJobs=STATE.jobs.filter(j=>getTransferTaskForType(j,'pickup')||getTransferTaskForType(j,'delivery'));
+  const pickupItems=transferJobs.map(j=>({j,t:getTransferTaskForType(j,'pickup')})).filter(x=>x.t);
+  const deliveryItems=transferJobs.map(j=>({j,t:getTransferTaskForType(j,'delivery')})).filter(x=>x.t);
+  return {transferJobs,pickupItems,deliveryItems};
+}
+function buildTransferPrintDocument(){
+  const {pickupItems,deliveryItems}=getTransferBoardData();
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const groupByUpstream=(items,type)=>items
+    .filter(x=>type==='pickup'?x.j.pickupPlannedAt:x.j.deliveryPlannedAt)
+    .sort((a,b)=>String((type==='pickup'?a.j.pickupPlannedAt:a.j.deliveryPlannedAt)||'9999').localeCompare(String((type==='pickup'?b.j.pickupPlannedAt:b.j.deliveryPlannedAt)||'9999')))
+    .reduce((acc,x)=>{
+      const key=x.j.upstream||'自受け';
+      (acc[key]=acc[key]||[]).push(x);
+      return acc;
+    },{});
+  const renderSection=(title,items,type)=>{
+    const groups=groupByUpstream(items,type);
+    const groupKeys=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'ja'));
+    if(!groupKeys.length)return `<div class="print-empty">対象なし</div>`;
+    return groupKeys.map(key=>`
+      <section class="print-group">
+        <div class="print-group-title">元請：${esc(key)}</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:150px">予定日時</th>
+              <th style="width:84px">区分</th>
+              <th style="width:110px">番号</th>
+              <th>顧客</th>
+              <th>車両</th>
+              <th style="width:140px">登録番号</th>
+              <th style="width:110px">担当</th>
+              <th style="width:88px">状態</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${groups[key].map(({j,t})=>{
+              const plan=type==='pickup'?j.pickupPlannedAt:j.deliveryPlannedAt;
+              const stage=STAGES.find(s=>s.id===t.stageId);
+              const vehicle=(j.vehicleName||'').split('　')[0];
+              return `<tr>
+                <td>${esc(fmtDT(plan))}</td>
+                <td>${esc(j.div==='hp'?'HP':'BP')} / ${esc(stage?.name||title)}</td>
+                <td>${esc(j.jobNumber||'')}</td>
+                <td>${esc(j.customerName||'')}</td>
+                <td>${esc(vehicle)}</td>
+                <td>${esc(j.plateNumber||plateFromVehicle(j.vehicleName)||'')}</td>
+                <td>${esc(t.assigneeId?getUserById(t.assigneeId)?.name:'未確定')}</td>
+                <td>${esc(ST_LABELS[t.status]||t.status||'')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </section>
+    `).join('');
   };
-  const card=(j,t,label)=>`<div class="kb-card ${j.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${j.id}__${t.id}"><div class="kc-num">${divTag(j.div)} ${j.jobNumber} / ${j.plateNumber||''}</div><div class="kc-nm">${j.customerName}</div><div class="kc-veh">🚗 ${j.vehicleName}</div><div class="kc-sub">元請: ${j.upstream||'自受け'} / ${label}: ${fmtDT(label==='引取り' ? j.pickupPlannedAt : j.deliveryPlannedAt)}</div><div class="kc-sub">${label==='引取り'&&STAGES.find(s=>s.id===t.stageId)?.code==='reservation'?'予約段階・未引取 / ':''}担当: ${t.assigneeId?getUserById(t.assigneeId)?.name:(j.assignedWorkerId?getUserById(j.assignedWorkerId)?.name:'未確定')}</div><div class="kc-ft"><span class="kc-ass">${ST_LABELS[t.status]||t.status}</span><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t.status]||'#64748b'}18;color:${ST_COLORS[t.status]||'#64748b'}">${ST_LABELS[t.status]||t.status}</span></div></div>`;
-  const colHtml=groups.map(g=>{
-    let items=[];
-    if(g.key==='pickup') items=transferJobs.map(j=>({j,t:getTransferTask(j,'pickup')})).filter(x=>x.t&&x.j.pickupPlannedAt);
-    if(g.key==='delivery') items=transferJobs.map(j=>({j,t:getTransferTask(j,'delivery')})).filter(x=>x.t&&x.j.deliveryPlannedAt);
-    if(g.key==='undecided') items=transferJobs.map(j=>({j,t:getTransferTask(j,'undecided')})).filter(x=>x.t&&(!x.j.pickupPlannedAt||!x.j.deliveryPlannedAt));
-    items.sort((a,b)=>String((g.when&&a.j[g.when])||'9999').localeCompare(String((g.when&&b.j[g.when])||'9999')) || String(a.j.upstream||'').localeCompare(String(b.j.upstream||'')) || String(a.j.customerName||'').localeCompare(String(b.j.customerName||'')));
-    return `<div class="kb-col" data-transfer-col="${g.key}"><div class="kb-hdr">${g.label}<span class="kb-cnt">${items.length}</span></div><div class="kb-cards">${items.map(x=>card(x.j,x.t,g.key==='pickup'?'引取り':'納車')).join('')||'<div style="text-align:center;padding:18px;color:var(--txt3)">なし</div>'}</div></div>`;
-  }).join('');
-  return `<div style="position:relative;height:100%"><div style="position:absolute;top:10px;right:14px;z-index:5"><button class="btn btn-n btn-sm" id="transfer-print-btn">🖨 印刷</button></div><div class="kb-scroll-wrap">${colHtml}</div></div>`;
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Ams PRO v2.3 引取・納車リスト</title>
+<style>
+  body{font-family:'Noto Sans JP',sans-serif;color:#111827;margin:24px}
+  h1{font-size:22px;margin:0 0 8px}
+  .meta{font-size:12px;color:#6b7280;margin-bottom:18px}
+  h2{font-size:16px;margin:24px 0 10px;padding-bottom:6px;border-bottom:2px solid #cbd5e1}
+  .print-group{margin-bottom:18px;break-inside:avoid}
+  .print-group-title{font-weight:700;font-size:13px;margin:0 0 6px;background:#eff6ff;border:1px solid #bfdbfe;padding:6px 8px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:left;vertical-align:top}
+  th{background:#f8fafc}
+  .print-empty{padding:14px;border:1px dashed #cbd5e1;color:#6b7280}
+  @media print{
+    body{margin:12mm}
+    .print-group{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+  <h1>Ams PRO v2.3 引取・納車リスト</h1>
+  <div class="meta">出力日時：${esc(new Date().toLocaleString('ja-JP'))}</div>
+  <h2>引取り予定</h2>
+  ${renderSection('引取り予定',pickupItems,'pickup')}
+  <h2>納車予定</h2>
+  ${renderSection('納車予定',deliveryItems,'delivery')}
+</body>
+</html>`;
 }
-
 function printTransferList(){
-  const rows=[];
-  STATE.jobs.forEach(j=>{
-    const reservation=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
-    const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
-    const delivery=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
-    const pickupTask=pickup||reservation;
-    if(pickupTask&&j.pickupPlannedAt){
-      rows.push({
-        upstream:j.upstream||'自受け',
-        kind:'引取',
-        plannedAt:j.pickupPlannedAt,
-        div:j.div,
-        stageCode:STAGES.find(s=>s.id===pickupTask.stageId)?.code||'',
-        stageName:STAGES.find(s=>s.id===pickupTask.stageId)?.name||'',
-        worker:getUserById(pickupTask.assigneeId||j.assignedWorkerId)?.name||'未確定',
-        jobNumber:j.jobNumber,
-        customerName:j.customerName,
-        plateNumber:j.plateNumber||'',
-        vehicleName:j.vehicleName||'',
-        status:ST_LABELS[pickupTask.status]||pickupTask.status,
-        memo:(pickupTask.stageId&&STAGES.find(s=>s.id===pickupTask.stageId)?.code==='reservation')?'予約段階・未引取':''
-      });
-    }
-    if(delivery&&j.deliveryPlannedAt){
-      rows.push({
-        upstream:j.upstream||'自受け',
-        kind:'納車',
-        plannedAt:j.deliveryPlannedAt,
-        div:j.div,
-        stageCode:STAGES.find(s=>s.id===delivery.stageId)?.code||'',
-        stageName:STAGES.find(s=>s.id===delivery.stageId)?.name||'',
-        worker:getUserById(delivery.assigneeId||j.assignedWorkerId)?.name||'未確定',
-        jobNumber:j.jobNumber,
-        customerName:j.customerName,
-        plateNumber:j.plateNumber||'',
-        vehicleName:j.vehicleName||'',
-        status:ST_LABELS[delivery.status]||delivery.status,
-        memo:''
-      });
-    }
-  });
-  rows.sort((a,b)=>String(a.upstream).localeCompare(String(b.upstream)) || String(a.plannedAt||'9999').localeCompare(String(b.plannedAt||'9999')) || String(a.kind).localeCompare(String(b.kind)) || String(a.customerName).localeCompare(String(b.customerName)));
-  const grouped=rows.reduce((acc,row)=>{(acc[row.upstream]||(acc[row.upstream]=[])).push(row);return acc;},{});
-  const groups=Object.keys(grouped);
-  const body=groups.length?groups.map(up=>`<div class="print-group"><div class="print-group-title">元請：${esc(up)} <span style="font-size:11px;font-weight:600">（${grouped[up].length}件）</span></div><table class="print-table"><thead><tr><th style="width:54px">区分</th><th style="width:132px">予定日時</th><th style="width:58px">事業</th><th style="width:92px">担当</th><th style="width:70px">番号</th><th style="width:86px">顧客</th><th style="width:96px">登録番号</th><th>車両</th><th style="width:74px">工程</th><th style="width:62px">状態</th><th style="width:120px">備考</th></tr></thead><tbody>${grouped[up].map(r=>`<tr><td>${esc(r.kind)}</td><td>${esc(fmtPrintDT(r.plannedAt))}</td><td>${esc(r.div.toUpperCase())}</td><td>${esc(r.worker)}</td><td>${esc(r.jobNumber)}</td><td>${esc(r.customerName)}</td><td>${esc(r.plateNumber)}</td><td>${esc(r.vehicleName)}</td><td>${esc(r.stageName)}</td><td>${esc(r.status)}</td><td>${esc(r.memo)}</td></tr>`).join('')}</tbody></table></div>`).join(''):`<div style="padding:24px;font-size:13px">印刷対象の引取・納車予定はありません。</div>`;
-  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>引取・納車リスト</title><style>body{font-family:'Noto Sans JP',sans-serif;color:#111;margin:18px} .print-page{padding:0;margin:0} .print-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:6px} .print-title{font-size:18px;font-weight:800} .print-sub{font-size:11px;color:#444} .print-group{margin:14px 0 18px} .print-group-title{font-size:14px;font-weight:800;margin-bottom:6px;padding:4px 8px;background:#f3f4f6;border-left:4px solid #1a56db} .print-table{width:100%;border-collapse:collapse;font-size:10px} .print-table th,.print-table td{border:1px solid #999;padding:4px 6px;vertical-align:top} .print-table th{background:#f3f4f6;font-weight:800} .print-note{margin-top:8px;font-size:10px;color:#555} @page{size:A4 portrait;margin:10mm}</style></head><body><div class="print-page"><div class="print-head"><div><div class="print-title">引取・納車リスト</div><div class="print-sub">元請ごとに集約 / 予定日時順に並び替え</div></div><div class="print-sub">出力日時：${esc(fmtPrintDT(new Date().toISOString()))}</div></div>${body}<div class="print-note">※ 予約段階の案件は、まだ引取り未完了のため「引取」として掲載しています。</div></div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},300);};</script></body></html>`;
-  const w=window.open('','transfer_print_window');
-  if(!w){showToast('ポップアップがブロックされました','e');return;}
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  const html=buildTransferPrintDocument();
+  const win=window.open('','_blank','noopener,noreferrer');
+  if(!win){showToast('印刷ウィンドウを開けませんでした。ポップアップ設定をご確認ください。','e');return;}
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>win.print(),250);
 }
-
+function vKanbanTransfer(){
+  const {pickupItems,deliveryItems}=getTransferBoardData();
+  const groups=[
+    {key:'pickup',label:'🚗 引取り',when:'pickupPlannedAt',items:pickupItems},
+    {key:'delivery',label:'📦 納車',when:'deliveryPlannedAt',items:deliveryItems},
+    {key:'undecided',label:'🗂 未定案件',when:null,items:[...pickupItems.filter(x=>!x.j.pickupPlannedAt),...deliveryItems.filter(x=>!x.j.deliveryPlannedAt)]}
+  ];
+  const card=(j,t,label,plannedAt)=>`<div class="kb-card ${j.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${j.id}__${t.id}"><div class="kc-num">${divTag(j.div)} ${j.jobNumber} / ${j.plateNumber||plateFromVehicle(j.vehicleName)||''}</div><div class="kc-nm">${j.customerName}</div><div class="kc-veh">🚗 ${j.vehicleName}</div><div class="kc-sub">元請: ${j.upstream||'自受け'} / ${label}: ${fmtDT(plannedAt)}</div><div class="kc-sub">工程: ${STAGES.find(s=>s.id===t.stageId)?.name||label}</div><div class="kc-ft"><span class="kc-ass">${t.assigneeId?getUserById(t.assigneeId)?.name:'未確定'}</span><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t.status]||'#64748b'}18;color:${ST_COLORS[t.status]||'#64748b'}">${ST_LABELS[t.status]||t.status}</span></div></div>`;
+  const colHtml=groups.map(g=>{
+    let items=[...g.items];
+    if(g.key==='pickup')items=items.filter(x=>x.j.pickupPlannedAt);
+    if(g.key==='delivery')items=items.filter(x=>x.j.deliveryPlannedAt);
+    if(g.key==='undecided'){
+      const seen=new Set();
+      items=items.filter(x=>{
+        const key=`${x.j.id}__${x.t.id}`;
+        if(seen.has(key))return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    if(g.when)items.sort((a,b)=>String(a.j[g.when]||'9999').localeCompare(String(b.j[g.when]||'9999'))||String(a.j.upstream||'').localeCompare(String(b.j.upstream||''),'ja'));
+    else items.sort((a,b)=>String(a.j.upstream||'').localeCompare(String(b.j.upstream||''),'ja'));
+    return `<div class="kb-col" data-transfer-col="${g.key}"><div class="kb-hdr">${g.label}<span class="kb-cnt">${items.length}</span></div><div class="kb-cards">${items.map(x=>card(x.j,x.t,g.key==='pickup'?'引取り':g.key==='delivery'?'納車':'未定',g.key==='pickup'?x.j.pickupPlannedAt:g.key==='delivery'?x.j.deliveryPlannedAt:(x.j.pickupPlannedAt||x.j.deliveryPlannedAt))).join('')||'<div style="text-align:center;padding:18px;color:var(--txt3)">なし</div>'}</div></div>`;
+  }).join('');
+  return `<div style="position:absolute;top:10px;right:14px;z-index:5"><button class="btn btn-n btn-sm" id="transfer-print-btn">🖨 印刷</button></div><div class="kb-scroll-wrap">${colHtml}</div>`;
+}
 
 // ── KANBAN DIV（BP / HP） ──────────────────────────────────────────
 function vKanbanDiv(div){
@@ -1755,43 +1788,35 @@ function mNewJob(){
 
 // ── CONFLICT ──────────────────────────────────────────
 function mConflict(){
-  const cd=STATE.conflictData;
-  if(!cd||!cd.task)return'';
+  const {conflictData:cd}=STATE;if(!cd)return'';
   const st=STAGES.find(s=>s.id===cd.task.stageId);
-  const stageName=(st&&st.name)?st.name:'対象工程';
-  const currentStatus=(cd.task&&cd.task.status)?cd.task.status:'pending';
-  const attemptedStatus=(cd.attempted&&cd.attempted.status)?cd.attempted.status:currentStatus;
-  const currentLabel=ST_LABELS[currentStatus]||currentStatus||'未設定';
-  const attemptedLabel=ST_LABELS[attemptedStatus]||attemptedStatus||'未設定';
-  return[
-    '<div class="mbk" id="mbk">',
-    '  <div class="mo" style="max-width:560px">',
-    '    <div class="mo-hdr">',
-    '      <span class="mo-ttl" style="color:var(--red)">⚠️ 更新競合 (HTTP 409)</span>',
-    '      <button class="mo-x" id="mc-x">×</button>',
-    '    </div>',
-    '    <div class="mo-body">',
-    '      <div class="cf-box">',
-    '        <div class="cf-ttl">🔒 更新の競合を検知</div>',
-    '        <div style="font-size:12.5px;color:var(--txt2)">別端末または直前の操作で「'+esc(stageName)+'」の状態が先に変更されました。</div>',
-    '        <div class="cf-grid">',
-    '          <div class="cf-col"><div class="cf-cl">現在の状態</div>',
-    '            <div style="font-weight:700;color:var(--grn)">'+esc(currentLabel)+'</div>',
-    '          </div>',
-    '          <div class="cf-col"><div class="cf-cl">保存しようとした状態</div>',
-    '            <div style="font-weight:700;color:var(--ylw)">'+esc(attemptedLabel)+'</div>',
-    '          </div>',
-    '        </div>',
-    '      </div>',
-    '      <div style="display:flex;flex-direction:column;gap:8px">',
-    '        <button class="btn btn-n" id="cf-reload">🔄 再読み込みして最新を確認<span style="margin-left:auto;font-size:11px;color:var(--grn)">推奨</span></button>',
-    '        <button class="btn btn-y" id="cf-force">⚡ 自分の変更で上書き保存<span style="margin-left:auto;font-size:11px;color:var(--red)">要注意</span></button>',
-    '        <button class="btn btn-n" id="cf-cancel">✖ キャンセル</button>',
-    '      </div>',
-    '    </div>',
-    '  </div>',
-    '</div>'
-  ].join('');
+  return`<div class="mbk" id="mbk">
+  <div class="mo" style="max-width:560px">
+    <div class="mo-hdr">
+      <span class="mo-ttl" style="color:var(--red)">⚠️ 更新競合 (HTTP 409)</span>
+      <button class="mo-x" id="mc-x">×</button>
+    </div>
+    <div class="mo-body">
+      <div class="cf-box">
+        <div class="cf-ttl">🔒 楽観ロック競合を検知</div>
+        <div style="font-size:12.5px;color:var(--txt2)">別端末が先に「${st?.name}」を更新しました。</div>
+        <div class="cf-grid">
+          <div class="cf-col"><div class="cf-cl">サーバー現在値</div>
+            <div style="font-weight:700;color:var(--grn)">${ST_LABELS[cd.task.status]}</div>
+          </div>
+          <div class="cf-col"><div class="cf-cl">あなたの変更</div>
+            <div style="font-weight:700;color:var(--ylw)">${ST_LABELS[cd.attempted.status||cd.task.status]}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-n" id="cf-reload">🔄 再読み込みして最新を確認<span style="margin-left:auto;font-size:11px;color:var(--grn)">推奨</span></button>
+        <button class="btn btn-y" id="cf-force">⚡ 自分の変更で上書き保存<span style="margin-left:auto;font-size:11px;color:var(--red)">要注意</span></button>
+        <button class="btn btn-n" id="cf-cancel">✖ キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>`;
 }
 
 // ============================================================
@@ -1813,6 +1838,7 @@ function bindAll(){
   const openQR=()=>setState({modal:'qr',qrScanned:null});
   document.getElementById('qr-btn')?.addEventListener('click',openQR);
   document.getElementById('qr-btn-cust')?.addEventListener('click',openQR);
+  document.getElementById('transfer-print-btn')?.addEventListener('click',printTransferList);
 
   document.querySelectorAll('[data-ojob]').forEach(el=>el.addEventListener('click',()=>{
     const j=STATE.jobs.find(j=>j.id===el.dataset.ojob);
@@ -1852,8 +1878,6 @@ function bindAll(){
     const canAuto=STATE.user?.div!=='all'&&STATE.user?.role!=='admin';
     setState({modal:'newJob',newJobDiv:canAuto?STATE.user.div:null});
   });
-
-  document.getElementById('transfer-print-btn')?.addEventListener('click',printTransferList);
 
   document.querySelectorAll('[data-stage-col]').forEach(col=>{
     col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('kb-drop-target');});
@@ -1998,9 +2022,7 @@ function bindAll(){
         completedAt:curSt==='completed'?new Date().toISOString():null,
       };
       if(!canEdit(STATE.user,t,j)){err.innerHTML='<div class="alert danger">⚠️ この工程を変更する権限がありません</div>';return;}
-      const latestJob=STATE.jobs.find(x=>x.id===j.id)||j;
-      const latestTask=latestJob.tasks.find(x=>x.id===t.id)||t;
-      const ok=updateTask(j.id,t.id,changes,latestTask.version);
+      const ok=updateTask(j.id,t.id,changes,t.version);
       if(ok){
         if(changes.assigneeId) updateJob(j.id,{assignedWorkerId:changes.assigneeId});
         setState({modal:null,selectedJob:null,selectedTask:null,dragMoveContext:null});showToast('工程を更新しました');

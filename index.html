@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v4.0.5</title>
+<title>Ams PRO v4.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -980,7 +980,7 @@ function shellHTML(){
   return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
   <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
   <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v4.0.5</div></div>
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v4.1</div></div>
     <nav class="sb-nav">${nav}</nav>
     <div class="sb-user">
       <div class="u-av ${avClass}">${user.name[0]}</div>
@@ -2292,7 +2292,6 @@ function bindAll(){
 // ============================================================
 render();
 
-{version:'v4.0.4', date:'不具合修正', changes:['検索窓と履歴ボタンが重複表示される不具合を修正']}
 
 </script>
 
@@ -2992,7 +2991,8 @@ render();
     {version:'v4.0.2', date:'不具合修正', changes:['BP / HPカンバン画面の元受け情報表示を復元']},
     {version:'v4.0.3', date:'不具合修正', changes:['今日の作業一覧クリック時に無反応となり、画面がフリーズしたように見える不具合を修正','作業遅延・履歴も同じ原因で正常にモーダル表示されない問題を修正']},
     {version:'v4.0.4', date:'不具合修正', changes:['検索窓と履歴ボタンが重複表示される不具合を修正']},
-    {version:'v4.0.5', date:'不具合修正', changes:['検索窓と履歴の重複表示原因となっていた重複V4トップツール描画ブロックを除去']}
+    {version:'v4.0.5', date:'不具合修正', changes:['検索窓と履歴の重複表示原因となっていた重複V4トップツール描画ブロックを除去']},
+    {version:'v4.1', date:'不具合修正', changes:['ログイン画面が表示されない致命的な不具合を修正','壊れていた履歴追記コードを整理','重複防止ガードを安全な形に再構成']}
   ];
 
   function injectV4Style(){
@@ -3260,16 +3260,17 @@ render();
   }
 
   // keep title in sync
-  document.title='Ams PRO v4.0.5';
+  document.title='Ams PRO v4.1';
 })();
 </script>
 
 
+
 <script>
-// v4.0.1 patch: duplicate utility controls guard
+// v4.1 patch: utility bar dedupe guard (safe)
 (function(){
   function keepFirstById(id){
-    var nodes=document.querySelectorAll('#'+CSS.escape(id));
+    var nodes = document.querySelectorAll('[id="'+id+'"]');
     for(var i=1;i<nodes.length;i++){
       if(nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
     }
@@ -3277,31 +3278,11 @@ render();
   function run(){
     ['global-search-btn','today-work-btn','delay-alert-btn','history-btn'].forEach(keepFirstById);
   }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',run,{once:true});
-  }else{
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', run, {once:true});
+  } else {
     run();
   }
-})();
-</script>
-
-
-<script>
-// v4.0.4 patch: prevent duplicate search bar / history controls
-(function(){
- function keepFirst(id){
-   const nodes=document.querySelectorAll('#'+id);
-   for(let i=1;i<nodes.length;i++){
-     nodes[i].remove();
-   }
- }
- function run(){
-   keepFirst('global-search-btn');
-   keepFirst('history-btn');
- }
- if(document.readyState==='loading'){
-   document.addEventListener('DOMContentLoaded',run,{once:true});
- }else{run();}
 })();
 </script>
 
@@ -3360,7 +3341,7 @@ render();
   };
 
   normalizeMastersAndJobs();
-  document.title='Ams PRO v4.0.5';
+  document.title='Ams PRO v4.1';
   render();
 })();
 </script>
@@ -3411,11 +3392,12 @@ render();
 
 
 
+
 <script>
-// v4.0.1 patch: duplicate utility controls guard
+// v4.1 patch: utility bar dedupe guard (safe)
 (function(){
   function keepFirstById(id){
-    var nodes=document.querySelectorAll('#'+CSS.escape(id));
+    var nodes = document.querySelectorAll('[id="'+id+'"]');
     for(var i=1;i<nodes.length;i++){
       if(nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
     }
@@ -3423,31 +3405,11 @@ render();
   function run(){
     ['global-search-btn','today-work-btn','delay-alert-btn','history-btn'].forEach(keepFirstById);
   }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',run,{once:true});
-  }else{
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', run, {once:true});
+  } else {
     run();
   }
-})();
-</script>
-
-
-<script>
-// v4.0.4 patch: prevent duplicate search bar / history controls
-(function(){
- function keepFirst(id){
-   const nodes=document.querySelectorAll('#'+id);
-   for(let i=1;i<nodes.length;i++){
-     nodes[i].remove();
-   }
- }
- function run(){
-   keepFirst('global-search-btn');
-   keepFirst('history-btn');
- }
- if(document.readyState==='loading'){
-   document.addEventListener('DOMContentLoaded',run,{once:true});
- }else{run();}
 })();
 </script>
 

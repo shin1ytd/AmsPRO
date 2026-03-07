@@ -141,6 +141,20 @@ tr:hover td{background:#eef4ff}
 .kb-fit-table td{padding:5px 8px;border-bottom:1px solid var(--bdr);vertical-align:middle}
 .kb-fit-table tr:hover td{background:#eef4ff;cursor:pointer}
 
+@media print{
+  body{background:#fff!important;color:#111!important;font-size:11px;overflow:visible!important}
+  .print-page{padding:0;margin:0}
+  .print-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:6px}
+  .print-title{font-size:18px;font-weight:800}
+  .print-sub{font-size:11px;color:#444}
+  .print-group{margin:14px 0 18px}
+  .print-group-title{font-size:14px;font-weight:800;margin-bottom:6px;padding:4px 8px;background:#f3f4f6;border-left:4px solid #1a56db}
+  .print-table{width:100%;border-collapse:collapse;font-size:10px}
+  .print-table th,.print-table td{border:1px solid #999;padding:4px 6px;vertical-align:top}
+  .print-table th{background:#f3f4f6;font-weight:800}
+  .print-note{margin-top:8px;font-size:10px;color:#555}
+}
+
 /* STATUS BUTTONS */
 .st-grp{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0}
 .st-btn{padding:13px 4px;border-radius:var(--r8);font-size:11px;font-weight:700;border:2px solid transparent;cursor:pointer;transition:all .13s;text-align:center;background:none}
@@ -486,6 +500,8 @@ const nextMon=()=>{const d=new Date();const dd=d.getDay();d.setDate(d.getDate()+
 const pad2=n=>String(n).padStart(2,'0');
 const isoDateTimeLocal=d=>{const x=new Date(d);return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}T${pad2(x.getHours())}:${pad2(x.getMinutes())}`};
 const fmtDT=d=>d?new Date(d).toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'未定';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
+const fmtPrintDT=d=>d?new Date(d).toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'未定';
 const addDT=(days,hour=9,min=0)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(hour,min,0,0);return isoDateTimeLocal(d)};
 const plateFromVehicle=v=>{const parts=String(v||'').split('　');return parts[1]||''};
 const T=isoDate(today);
@@ -1181,26 +1197,91 @@ function vDashboard(div){
 // ── KANBAN TRANSFER（引取り・納車統合） ──────────────────────────────────────────
 function vKanbanTransfer(){
   const transferJobs=STATE.jobs.filter(j=>{
+    const reservation=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
     const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
     const delivery=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
-    return pickup||delivery;
+    return reservation||pickup||delivery;
   });
   const groups=[
-    {key:'pickup',label:'🚗 引取り',when:'pickupPlannedAt'},
-    {key:'delivery',label:'📦 納車',when:'deliveryPlannedAt'},
+    {key:'pickup',label:'🚗 引取り予定',when:'pickupPlannedAt'},
+    {key:'delivery',label:'📦 納車予定',when:'deliveryPlannedAt'},
     {key:'undecided',label:'🗂 未定案件',when:null}
   ];
-  const card=(j,t,label)=>`<div class="kb-card ${j.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${j.id}__${t.id}"><div class="kc-num">${divTag(j.div)} ${j.jobNumber} / ${j.plateNumber||''}</div><div class="kc-nm">${j.customerName}</div><div class="kc-veh">🚗 ${j.vehicleName}</div><div class="kc-sub">元請: ${j.upstream||'自受け'} / ${label}: ${fmtDT(j[label==='引取り'? 'pickupPlannedAt':'deliveryPlannedAt'])}</div><div class="kc-ft"><span class="kc-ass">${t.assigneeId?getUserById(t.assigneeId)?.name:'未確定'}</span><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t.status]||'#64748b'}18;color:${ST_COLORS[t.status]||'#64748b'}">${ST_LABELS[t.status]||t.status}</span></div></div>`;
+  const getTransferTask=(j,type)=>{
+    if(type==='pickup'){
+      const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
+      if(pickup)return pickup;
+      return j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
+    }
+    if(type==='delivery') return j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
+    return j.tasks.find(t=>{const c=STAGES.find(s=>s.id===t.stageId)?.code;return (c==='reservation'||c==='pickup'||c==='delivery')&&t.status!=='completed';});
+  };
+  const card=(j,t,label)=>`<div class="kb-card ${j.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${j.id}__${t.id}"><div class="kc-num">${divTag(j.div)} ${j.jobNumber} / ${j.plateNumber||''}</div><div class="kc-nm">${j.customerName}</div><div class="kc-veh">🚗 ${j.vehicleName}</div><div class="kc-sub">元請: ${j.upstream||'自受け'} / ${label}: ${fmtDT(label==='引取り' ? j.pickupPlannedAt : j.deliveryPlannedAt)}</div><div class="kc-sub">${label==='引取り'&&STAGES.find(s=>s.id===t.stageId)?.code==='reservation'?'予約段階・未引取 / ':''}担当: ${t.assigneeId?getUserById(t.assigneeId)?.name:(j.assignedWorkerId?getUserById(j.assignedWorkerId)?.name:'未確定')}</div><div class="kc-ft"><span class="kc-ass">${ST_LABELS[t.status]||t.status}</span><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t.status]||'#64748b'}18;color:${ST_COLORS[t.status]||'#64748b'}">${ST_LABELS[t.status]||t.status}</span></div></div>`;
   const colHtml=groups.map(g=>{
     let items=[];
-    if(g.key==='pickup') items=transferJobs.map(j=>({j,t:j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed')})).filter(x=>x.t&&x.j.pickupPlannedAt);
-    if(g.key==='delivery') items=transferJobs.map(j=>({j,t:j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed')})).filter(x=>x.t&&x.j.deliveryPlannedAt);
-    if(g.key==='undecided') items=transferJobs.map(j=>({j,t:j.tasks.find(t=>{const c=STAGES.find(s=>s.id===t.stageId)?.code;return (c==='pickup'||c==='delivery')&&t.status!=='completed';})})).filter(x=>x.t&&(!x.j.pickupPlannedAt||!x.j.deliveryPlannedAt));
-    items.sort((a,b)=>String(a.j[g.when]||'9999').localeCompare(String(b.j[g.when]||'9999')));
+    if(g.key==='pickup') items=transferJobs.map(j=>({j,t:getTransferTask(j,'pickup')})).filter(x=>x.t&&x.j.pickupPlannedAt);
+    if(g.key==='delivery') items=transferJobs.map(j=>({j,t:getTransferTask(j,'delivery')})).filter(x=>x.t&&x.j.deliveryPlannedAt);
+    if(g.key==='undecided') items=transferJobs.map(j=>({j,t:getTransferTask(j,'undecided')})).filter(x=>x.t&&(!x.j.pickupPlannedAt||!x.j.deliveryPlannedAt));
+    items.sort((a,b)=>String((g.when&&a.j[g.when])||'9999').localeCompare(String((g.when&&b.j[g.when])||'9999')) || String(a.j.upstream||'').localeCompare(String(b.j.upstream||'')) || String(a.j.customerName||'').localeCompare(String(b.j.customerName||'')));
     return `<div class="kb-col" data-transfer-col="${g.key}"><div class="kb-hdr">${g.label}<span class="kb-cnt">${items.length}</span></div><div class="kb-cards">${items.map(x=>card(x.j,x.t,g.key==='pickup'?'引取り':'納車')).join('')||'<div style="text-align:center;padding:18px;color:var(--txt3)">なし</div>'}</div></div>`;
   }).join('');
-  return `<div class="kb-scroll-wrap">${colHtml}</div>`;
+  return `<div style="position:relative;height:100%"><div style="position:absolute;top:10px;right:14px;z-index:5"><button class="btn btn-n btn-sm" id="transfer-print-btn">🖨 印刷</button></div><div class="kb-scroll-wrap">${colHtml}</div></div>`;
 }
+
+function printTransferList(){
+  const rows=[];
+  STATE.jobs.forEach(j=>{
+    const reservation=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='reservation'&&t.status!=='completed');
+    const pickup=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='pickup'&&t.status!=='completed');
+    const delivery=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code==='delivery'&&t.status!=='completed');
+    const pickupTask=pickup||reservation;
+    if(pickupTask&&j.pickupPlannedAt){
+      rows.push({
+        upstream:j.upstream||'自受け',
+        kind:'引取',
+        plannedAt:j.pickupPlannedAt,
+        div:j.div,
+        stageCode:STAGES.find(s=>s.id===pickupTask.stageId)?.code||'',
+        stageName:STAGES.find(s=>s.id===pickupTask.stageId)?.name||'',
+        worker:getUserById(pickupTask.assigneeId||j.assignedWorkerId)?.name||'未確定',
+        jobNumber:j.jobNumber,
+        customerName:j.customerName,
+        plateNumber:j.plateNumber||'',
+        vehicleName:j.vehicleName||'',
+        status:ST_LABELS[pickupTask.status]||pickupTask.status,
+        memo:(pickupTask.stageId&&STAGES.find(s=>s.id===pickupTask.stageId)?.code==='reservation')?'予約段階・未引取':''
+      });
+    }
+    if(delivery&&j.deliveryPlannedAt){
+      rows.push({
+        upstream:j.upstream||'自受け',
+        kind:'納車',
+        plannedAt:j.deliveryPlannedAt,
+        div:j.div,
+        stageCode:STAGES.find(s=>s.id===delivery.stageId)?.code||'',
+        stageName:STAGES.find(s=>s.id===delivery.stageId)?.name||'',
+        worker:getUserById(delivery.assigneeId||j.assignedWorkerId)?.name||'未確定',
+        jobNumber:j.jobNumber,
+        customerName:j.customerName,
+        plateNumber:j.plateNumber||'',
+        vehicleName:j.vehicleName||'',
+        status:ST_LABELS[delivery.status]||delivery.status,
+        memo:''
+      });
+    }
+  });
+  rows.sort((a,b)=>String(a.upstream).localeCompare(String(b.upstream)) || String(a.plannedAt||'9999').localeCompare(String(b.plannedAt||'9999')) || String(a.kind).localeCompare(String(b.kind)) || String(a.customerName).localeCompare(String(b.customerName)));
+  const grouped=rows.reduce((acc,row)=>{(acc[row.upstream]||(acc[row.upstream]=[])).push(row);return acc;},{});
+  const groups=Object.keys(grouped);
+  const body=groups.length?groups.map(up=>`<div class="print-group"><div class="print-group-title">元請：${esc(up)} <span style="font-size:11px;font-weight:600">（${grouped[up].length}件）</span></div><table class="print-table"><thead><tr><th style="width:54px">区分</th><th style="width:132px">予定日時</th><th style="width:58px">事業</th><th style="width:92px">担当</th><th style="width:70px">番号</th><th style="width:86px">顧客</th><th style="width:96px">登録番号</th><th>車両</th><th style="width:74px">工程</th><th style="width:62px">状態</th><th style="width:120px">備考</th></tr></thead><tbody>${grouped[up].map(r=>`<tr><td>${esc(r.kind)}</td><td>${esc(fmtPrintDT(r.plannedAt))}</td><td>${esc(r.div.toUpperCase())}</td><td>${esc(r.worker)}</td><td>${esc(r.jobNumber)}</td><td>${esc(r.customerName)}</td><td>${esc(r.plateNumber)}</td><td>${esc(r.vehicleName)}</td><td>${esc(r.stageName)}</td><td>${esc(r.status)}</td><td>${esc(r.memo)}</td></tr>`).join('')}</tbody></table></div>`).join(''):`<div style="padding:24px;font-size:13px">印刷対象の引取・納車予定はありません。</div>`;
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>引取・納車リスト</title><style>body{font-family:'Noto Sans JP',sans-serif;color:#111;margin:18px} .print-page{padding:0;margin:0} .print-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;border-bottom:2px solid #333;padding-bottom:6px} .print-title{font-size:18px;font-weight:800} .print-sub{font-size:11px;color:#444} .print-group{margin:14px 0 18px} .print-group-title{font-size:14px;font-weight:800;margin-bottom:6px;padding:4px 8px;background:#f3f4f6;border-left:4px solid #1a56db} .print-table{width:100%;border-collapse:collapse;font-size:10px} .print-table th,.print-table td{border:1px solid #999;padding:4px 6px;vertical-align:top} .print-table th{background:#f3f4f6;font-weight:800} .print-note{margin-top:8px;font-size:10px;color:#555} @page{size:A4 portrait;margin:10mm}</style></head><body><div class="print-page"><div class="print-head"><div><div class="print-title">引取・納車リスト</div><div class="print-sub">元請ごとに集約 / 予定日時順に並び替え</div></div><div class="print-sub">出力日時：${esc(fmtPrintDT(new Date().toISOString()))}</div></div>${body}<div class="print-note">※ 予約段階の案件は、まだ引取り未完了のため「引取」として掲載しています。</div></div><script>window.onload=function(){window.print();setTimeout(function(){window.close();},300);};</script></body></html>`;
+  const w=window.open('','transfer_print_window');
+  if(!w){showToast('ポップアップがブロックされました','e');return;}
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
 
 // ── KANBAN DIV（BP / HP） ──────────────────────────────────────────
 function vKanbanDiv(div){
@@ -1761,6 +1842,8 @@ function bindAll(){
     const canAuto=STATE.user?.div!=='all'&&STATE.user?.role!=='admin';
     setState({modal:'newJob',newJobDiv:canAuto?STATE.user.div:null});
   });
+
+  document.getElementById('transfer-print-btn')?.addEventListener('click',printTransferList);
 
   document.querySelectorAll('[data-stage-col]').forEach(col=>{
     col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('kb-drop-target');});

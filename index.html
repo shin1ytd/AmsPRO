@@ -2992,7 +2992,8 @@ render();
     {version:'v4.0.3', date:'不具合修正', changes:['今日の作業一覧クリック時に無反応となり、画面がフリーズしたように見える不具合を修正','作業遅延・履歴も同じ原因で正常にモーダル表示されない問題を修正']},
     {version:'v4.0.4', date:'不具合修正', changes:['検索窓と履歴ボタンが重複表示される不具合を修正']},
     {version:'v4.0.5', date:'不具合修正', changes:['検索窓と履歴の重複表示原因となっていた重複V4トップツール描画ブロックを除去']},
-    {version:'v4.1', date:'不具合修正', changes:['ログイン画面が表示されない致命的な不具合を修正','壊れていた履歴追記コードを整理','重複防止ガードを安全な形に再構成']}
+    {version:'v4.1', date:'不具合修正', changes:['ログイン画面が表示されない致命的な不具合を修正','壊れていた履歴追記コードを整理','重複防止ガードを安全な形に再構成']},
+    {version:'v4.1.1', date:'検索修正', changes:['検索窓は入力中に即時検索せず、Enterキー押下時のみ検索する仕様に変更']}
   ];
 
   function injectV4Style(){
@@ -3237,8 +3238,12 @@ render();
     window.bindAll = function(){
       _bindAll.apply(this, arguments);
 
-      document.getElementById('vehicle-search')?.addEventListener('input', function(e){
-        setState({vehicleSearch:e.target.value});
+      document.getElementById('vehicle-search')?.addEventListener('keydown', function(e){
+        if(e.isComposing || e.keyCode===229) return;
+        if(e.key==='Enter'){
+          e.preventDefault();
+          setState({vehicleSearch:e.target.value});
+        }
       });
 
       document.getElementById('today-work-btn')?.addEventListener('click', function(){

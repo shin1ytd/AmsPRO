@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ams PRO v2.3.2</title>
+<title>Ams PRO v2.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -11,8 +11,8 @@
   --bdr:#dde3ec;--bdr2:#b8c4d4;--txt:#1a2133;--txt2:#4a5872;--txt3:#8496ae;
   --acc:#1a56db;--acc2:#2563eb;--grn:#047857;--grn2:#059669;
   --ylw:#b45309;--org:#c2410c;--red:#b91c1c;--pur:#6d28d9;--cyn:#0e7490;
-  --hp:#0e7490;--hp2:#0891b2;/* HP = ティール */
-  --bp:#1a56db;--bp2:#2563eb;/* BP = ブルー */
+  --hp:#0e7490;--hp2:#0891b2;
+  --bp:#1a56db;--bp2:#2563eb;
   --font:'Noto Sans JP',sans-serif;--mono:'JetBrains Mono',monospace;
   --r6:6px;--r8:8px;--r10:10px;--r12:12px;--r16:16px;
   --sh:0 4px 20px rgba(0,0,0,.09);--sh2:0 1px 6px rgba(0,0,0,.06);
@@ -24,7 +24,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);font-size:14p
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
 button{cursor:pointer;font-family:var(--font)}
-input,select,textarea{font-family:var(--font);outline:none}
+input,select,textarea{font-family:var(--font);outline:none;border:1px solid var(--bdr);border-radius:var(--r6);padding:6px 10px;transition:all .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(26,86,219,.1)}
 
 /* LAYOUT */
 #app{display:flex;height:100vh;overflow:hidden}
@@ -60,36 +61,31 @@ input,select,textarea{font-family:var(--font);outline:none}
 .content{flex:1;overflow-y:auto;padding:18px}
 .content.no-pad{padding:0;overflow:hidden}
 
-/* DIVISION STRIPE */
-.div-stripe-hp{border-top:3px solid var(--hp)}
-.div-stripe-bp{border-top:3px solid var(--bp)}
-
-/* BADGES */
+/* BADGES & TAGS */
 .bx{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .bx-r{background:rgba(185,28,28,.1);color:var(--red);border:1px solid rgba(185,28,28,.25)}
 .bx-y{background:rgba(180,83,9,.1);color:var(--ylw);border:1px solid rgba(180,83,9,.25)}
 .bx-g{background:rgba(4,120,87,.1);color:var(--grn);border:1px solid rgba(4,120,87,.25)}
 .bx-b{background:rgba(26,86,219,.1);color:var(--acc);border:1px solid rgba(26,86,219,.25)}
 .bx-n{background:rgba(132,150,174,.12);color:var(--txt2);border:1px solid var(--bdr)}
-.bx-hp{background:rgba(14,116,144,.1);color:var(--hp);border:1px solid rgba(14,116,144,.25)}
-.bx-bp{background:rgba(26,86,219,.1);color:var(--bp);border:1px solid rgba(26,86,219,.25)}
-
-/* DIV TAG */
 .div-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle;margin-right:3px}
 .div-tag.hp{background:rgba(14,116,144,.15);color:var(--hp)}
 .div-tag.bp{background:rgba(26,86,219,.15);color:var(--bp)}
+.up-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap}
 
 /* CARDS / KPI */
-.card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r12);padding:15px;box-shadow:var(--sh2)}
-.card-t{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:11px}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
-.kpi{background:#fff;border:1px solid var(--bdr);border-radius:var(--r12);padding:14px 16px;box-shadow:var(--sh2)}
-.kpi-lbl{font-size:10.5px;color:var(--txt3);margin-bottom:5px}
+.card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r12);padding:15px;box-shadow:var(--sh2);height:100%}
+.card-t{font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:11px;display:flex;align-items:center;justify-content:space-between}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:11px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid var(--bdr);border-radius:var(--r12);padding:14px 16px;box-shadow:var(--sh2);display:flex;flex-direction:column;justify-content:center}
+.kpi-lbl{font-size:11px;color:var(--txt3);margin-bottom:5px;font-weight:600}
 .kpi-val{font-size:28px;font-weight:900;font-family:var(--mono);line-height:1}
 .kpi.bl .kpi-val{color:var(--acc2)}.kpi.gn .kpi-val{color:var(--grn)}
 .kpi.yl .kpi-val{color:var(--ylw)}.kpi.rd .kpi-val{color:var(--red)}
 .kpi.hp-c .kpi-val{color:var(--hp)}.kpi.bp-c .kpi-val{color:var(--bp)}
-.kpi-sub{font-size:10px;color:var(--txt3);margin-top:4px}
+.kpi-sub{font-size:10px;color:var(--txt3);margin-top:6px;display:flex;align-items:center;gap:5px}
+.kpi-bar-bg{height:4px;background:var(--bdr);border-radius:2px;flex:1;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px}
 
 /* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:var(--r10);border:1px solid var(--bdr)}
@@ -99,54 +95,38 @@ td{padding:9px 12px;border-bottom:1px solid var(--bdr);color:var(--txt)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#eef4ff}
 .td-m{font-family:var(--mono);font-size:12px;color:var(--acc2)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
 /* KANBAN */
 .kb-scroll-wrap{display:flex;gap:9px;overflow-x:auto;padding:14px;height:100%;align-items:flex-start}
-.kb-col{min-width:170px;max-width:170px;background:#eceff4;border:1px solid var(--bdr);border-radius:var(--r10);display:flex;flex-direction:column;flex-shrink:0}
-.kb-hdr{padding:8px 10px;border-bottom:1px solid var(--bdr);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;color:var(--txt2);background:#e2e8f0;border-radius:var(--r10) var(--r10) 0 0}
+.kb-col{min-width:210px;max-width:210px;background:#eceff4;border:1px solid var(--bdr);border-radius:var(--r10);display:flex;flex-direction:column;flex-shrink:0;min-height:200px}
+.kb-col.drag-over{background:#dbeafe;border:2px dashed var(--acc2)}
+.kb-hdr{padding:10px 12px;border-bottom:1px solid var(--bdr);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;color:var(--txt2);background:#e2e8f0;border-radius:var(--r10) var(--r10) 0 0}
 .kb-hdr.wip-over{border-bottom-color:var(--red);color:var(--red);background:#fff0f0}
-.kb-cnt{background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;color:var(--txt2)}
-.kb-cnt.over{background:#fee2e2;border-color:var(--red);color:var(--red)}
-.kb-cards{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px;max-height:calc(100vh - 175px)}
-.kb-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r8);padding:8px 9px;cursor:pointer;transition:all .13s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.kb-card:hover{border-color:var(--acc2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,86,219,.12)}
-.kb-card.hold{border-left:3px solid var(--ylw);background:#fffdf5}
-.kb-card.urg{border-left:3px solid var(--red);background:#fff8f8}
-.kb-card.hp-card{border-left:3px solid var(--hp)}
-.kb-card.bp-card{border-left:3px solid var(--bp)}
-.kc-num{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-bottom:1px}
-.kc-nm{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kc-veh{font-size:10px;color:var(--txt2);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kc-sub{font-size:9.5px;color:var(--txt3);margin-top:2px;line-height:1.35}
-.kb-card.dragging{opacity:.55;transform:rotate(1deg)}
-.kb-drop-target{outline:2px dashed var(--acc);outline-offset:-4px;background:#f8fbff}
-.kpi-hero{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
-.kpi-wide{padding:18px;border-radius:var(--r12);border:1px solid var(--bdr);background:#fff;box-shadow:var(--sh2)}
-.kpi-progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
-.kpi-progress > span{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--hp))}
-.dim{font-size:11px;color:var(--txt3)}
-@media (max-width:1024px){.kpi-hero{grid-template-columns:1fr}}
-.kc-ft{display:flex;align-items:center;justify-content:space-between}
-.kc-ass{font-size:9.5px;color:var(--txt3)}
-.kc-day{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px}
+.kb-cnt{background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--txt2)}
+.kb-cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 175px)}
+.kb-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r8);padding:10px;cursor:grab;transition:box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative}
+.kb-card:hover{border-color:var(--acc2);box-shadow:0 4px 12px rgba(26,86,219,.12)}
+.kb-card:active{cursor:grabbing}
+.kb-card.hold{border-left:4px solid var(--ylw);background:#fffdf5}
+.kb-card.urg{border-left:4px solid var(--red);background:#fff8f8}
+.kb-card.hp-card{border-left:4px solid var(--hp)}
+.kb-card.bp-card{border-left:4px solid var(--bp)}
+.kc-num{font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+.kc-nm{font-size:12.5px;font-weight:700;margin-bottom:2px}
+.kc-veh{font-size:11px;color:var(--txt2);margin-bottom:6px;display:flex;flex-direction:column}
+.kc-veh-plate{font-weight:700;color:var(--txt);font-family:var(--mono)}
+.kc-ft{display:flex;align-items:center;justify-content:space-between;border-top:1px dashed var(--bdr);padding-top:6px;margin-top:2px}
+.kc-ass{font-size:10px;color:var(--txt3);font-weight:600}
+.kc-day{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
 .kc-day.safe{background:rgba(4,120,87,.12);color:var(--grn)}
 .kc-day.warn{background:rgba(180,83,9,.12);color:var(--ylw)}
 .kc-day.over{background:rgba(185,28,28,.15);color:var(--red)}
 
-/* KANBAN FIT */
-.kb-fit-wrap{height:100%;overflow:auto;padding:14px}
-.kb-fit-table{width:100%;border-collapse:collapse;font-size:12px}
-.kb-fit-table th{background:#eef2f8;color:var(--txt3);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;text-align:left;border-bottom:2px solid var(--bdr);white-space:nowrap;position:sticky;top:0;z-index:2}
-.kb-fit-table td{padding:5px 8px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-.kb-fit-table tr:hover td{background:#eef4ff;cursor:pointer}
-
 /* STATUS BUTTONS */
-.st-grp{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0}
+.st-grp{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
 .st-btn{padding:13px 4px;border-radius:var(--r8);font-size:11px;font-weight:700;border:2px solid transparent;cursor:pointer;transition:all .13s;text-align:center;background:none}
 .st-btn.pending{border-color:var(--bdr2);color:var(--txt2)}.st-btn.pending.sel{background:#e2e8f0;border-color:var(--txt2)}
-.st-btn.ready{border-color:var(--acc);color:var(--acc2)}.st-btn.ready.sel{background:#dbeafe}
-.st-btn.in_progress{border-color:var(--ylw);color:var(--ylw)}.st-btn.in_progress.sel{background:#fef3c7}
+.st-btn.in_progress{border-color:var(--acc);color:var(--acc2)}.st-btn.in_progress.sel{background:#dbeafe}
 .st-btn.completed{border-color:var(--grn);color:var(--grn)}.st-btn.completed.sel{background:#d1fae5}
 .st-btn.hold{border-color:var(--red);color:var(--red)}.st-btn.hold.sel{background:#fee2e2}
 
@@ -157,196 +137,51 @@ tr:hover td{background:#eef4ff}
 .btn-g{background:var(--grn);color:#fff}.btn-g:hover{background:#065f46}
 .btn-y{background:var(--ylw);color:#fff}.btn-y:hover{background:#92400e}
 .btn-r{background:var(--red);color:#fff}.btn-r:hover{background:#991b1b}
-.btn-n{background:transparent;color:var(--txt2);border:1px solid var(--bdr)}.btn-n:hover{background:var(--bg3);color:var(--txt)}
+.btn-n{background:#fff;color:var(--txt2);border:1px solid var(--bdr)}.btn-n:hover{background:var(--bg3);color:var(--txt)}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:var(--r6)}
 .btn-lg{padding:14px 20px;font-size:14px;border-radius:var(--r10);min-width:120px}
 
-/* TOGGLE */
-.tog-grp{display:flex;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r8);padding:3px;gap:2px}
-.tog-btn{padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--txt3);transition:all .13s}
-.tog-btn.on{background:#fff;color:var(--acc2);box-shadow:0 1px 4px rgba(0,0,0,.1)}
-
-/* FORMS */
+/* FORMS / GRID */
 .fg{margin-bottom:14px}
 .flbl{display:block;font-size:11.5px;font-weight:600;color:var(--txt2);margin-bottom:5px}
-.fi{width:100%;background:#fff;border:1px solid var(--bdr);color:var(--txt);padding:9px 12px;border-radius:var(--r8);font-size:13px;transition:all .14s}
-.fi:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-.fi option{background:#fff}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fi{width:100%;background:#fff;color:var(--txt);font-size:13px;}
 textarea.fi{resize:vertical;min-height:75px}
-.dsc{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
-.ds{padding:4px 9px;border-radius:5px;font-size:11px;font-weight:600;background:#eff6ff;border:1px solid #bfdbfe;color:var(--acc2);cursor:pointer;transition:all .13s}
-.ds:hover{border-color:var(--acc);color:#fff;background:var(--acc)}
-
-/* DIV SELECTOR on new job */
-.div-sel-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.div-sel-btn{padding:16px;border-radius:var(--r10);border:2px solid var(--bdr);cursor:pointer;text-align:center;background:#fff;transition:all .15s}
-.div-sel-btn:hover{border-color:var(--bdr2)}
-.div-sel-btn.sel-hp{border-color:var(--hp);background:rgba(14,116,144,.06)}
-.div-sel-btn.sel-bp{border-color:var(--bp);background:rgba(26,86,219,.06)}
-.div-sel-btn .ds-ico{font-size:26px;margin-bottom:6px}
-.div-sel-btn .ds-nm{font-size:13px;font-weight:700}
-.div-sel-btn .ds-sub{font-size:11px;color:var(--txt3);margin-top:2px}
 
 /* MODAL */
 .mbk{position:fixed;inset:0;background:rgba(30,40,70,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-.mo{background:#fff;border:1px solid var(--bdr);border-radius:var(--r16);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
-.mo-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;border-radius:var(--r16) var(--r16) 0 0}
-.mo-ttl{font-size:15px;font-weight:700}
-.mo-x{background:none;border:none;color:var(--txt3);font-size:22px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;transition:color .14s}
+.mo{background:#fff;border:1px solid var(--bdr);border-radius:var(--r16);width:100%;max-width:720px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15);display:flex;flex-direction:column}
+.mo-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:#fff;flex-shrink:0}
+.mo-ttl{font-size:16px;font-weight:700}
+.mo-x{background:none;border:none;color:var(--txt3);font-size:22px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;}
 .mo-x:hover{color:var(--red)}
-.mo-body{padding:18px 22px}
-.mo-ft{padding:14px 22px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px}
-.tabs{display:flex;border-bottom:1px solid var(--bdr);background:#f8fafc;flex-shrink:0}
-.tab{padding:10px 16px;border:none;background:none;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--txt3);border-bottom:2px solid transparent;transition:all .13s}
-.tab.on{color:var(--acc2);border-bottom-color:var(--acc);font-weight:700}
+.mo-body{padding:22px;flex:1;overflow-y:auto}
+.mo-ft{padding:14px 22px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px;background:#f8fafc;flex-shrink:0}
 
-/* STAGE FLOW */
-.sf{display:flex;flex-direction:column;gap:5px}
-.sf-row{display:flex;align-items:center;gap:9px;padding:9px 12px;background:#f8fafc;border:1px solid var(--bdr);border-radius:var(--r8);cursor:pointer;transition:all .13s}
-.sf-row:hover{border-color:var(--acc2);background:#eff6ff}
-.sf-row.cur{border-left:3px solid var(--acc);background:#eff6ff}
-.sf-row.done{opacity:.6;background:#f0fdf4}
-.sf-row.hld{border-left:3px solid var(--ylw);background:#fffbeb}
-.sf-row.no-edit{cursor:default}
-.sf-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-.sf-num.d{background:var(--grn);color:#fff}.sf-num.c{background:var(--acc);color:#fff}
-.sf-num.h{background:var(--ylw);color:#fff}.sf-num.p{background:#e2e8f0;color:#64748b;border:1px solid var(--bdr)}
-.sf-nm{flex:1;font-size:13px;font-weight:600}
-.sf-sub{font-size:11px;color:var(--txt3);min-width:60px}
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:300;padding:12px 20px;border-radius:var(--r10);font-weight:600;font-size:13px;box-shadow:var(--sh);transition:opacity 0.3s ease, transform 0.3s ease;transform:translateY(0);opacity:1}
+.toast.hide{opacity:0;transform:translateY(10px)}
+.toast.s{background:var(--grn);color:#fff}.toast.e{background:var(--red);color:#fff}.toast.i{background:var(--acc);color:#fff}
 
-/* MY VIEW */
-.tc{background:#fff;border:1px solid var(--bdr);border-radius:var(--r10);padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .13s;box-shadow:var(--sh2)}
-.tc:hover{border-color:var(--acc2);background:#eff6ff}
-.tc-st{min-width:76px;background:#f0f4ff;border-radius:var(--r6);padding:6px 8px;text-align:center}
-.tc-st-nm{font-size:11px;font-weight:700;color:var(--acc2)}
-.tc-info{flex:1;min-width:0}
-.tc-job{font-size:13px;font-weight:700}
-.tc-veh{font-size:11.5px;color:var(--txt2)}
-.tc-eta{font-size:10.5px;color:var(--txt3);margin-top:2px}
-
-/* ALERTS */
-.alert{padding:9px 13px;border-radius:var(--r8);font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:7px;margin-bottom:8px}
+/* UTILS */
+.alert{padding:10px 14px;border-radius:var(--r8);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .alert.warn{background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.2);color:var(--ylw)}
 .alert.danger{background:rgba(185,28,28,.08);border:1px solid rgba(185,28,28,.2);color:var(--red)}
 .alert.info{background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.2);color:var(--acc2)}
-.alert.success{background:rgba(4,120,87,.08);border:1px solid rgba(4,120,87,.2);color:var(--grn)}
 
-/* BOTTLENECK */
-.bn{display:flex;flex-direction:column;gap:7px}
-.bn-r{display:flex;align-items:center;gap:8px;font-size:12px}
-.bn-lbl{width:75px;color:var(--txt2);font-size:11.5px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bn-tr{flex:1;height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden}
-.bn-fi{height:100%;border-radius:4px;transition:width .5s}
-.bn-n{width:28px;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--txt2);flex-shrink:0}
+/* LIST UNASSIGNED */
+.tc{background:#fff;border:1px solid var(--bdr);border-radius:var(--r10);padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh2);margin-bottom:8px}
+.tc:hover{border-color:var(--acc2);background:#eff6ff}
+.tc-st{min-width:80px;background:#f0f4ff;border-radius:var(--r6);padding:6px 8px;text-align:center}
+.tc-info{flex:1;min-width:0}
+.tc-job{font-size:13px;font-weight:700}
+.tc-veh{font-size:11.5px;color:var(--txt2);margin-top:2px}
 
-/* PROFIT */
-.pr-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr);font-size:13px}
-.pr-row:last-child{border:none}
-.pr-lbl{color:var(--txt2)}.pr-val{font-family:var(--mono);font-weight:700}
-.pos{color:var(--grn)}.neg{color:var(--red)}
-
-/* CONFLICT */
-.cf-box{background:rgba(185,28,28,.06);border:1px solid rgba(185,28,28,.2);border-radius:var(--r10);padding:14px;margin-bottom:14px}
-.cf-ttl{font-size:13.5px;font-weight:700;color:var(--red);margin-bottom:7px}
-.cf-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
-.cf-col{background:#f8fafc;border:1px solid var(--bdr);border-radius:var(--r6);padding:8px;font-size:12px}
-.cf-cl{font-size:10px;color:var(--txt3);margin-bottom:3px;font-weight:600;text-transform:uppercase}
-
-/* FILTER */
-.fbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
-.fchip{padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--bdr);color:var(--txt2);background:none;cursor:pointer;transition:all .13s}
-.fchip:hover{border-color:var(--acc);color:var(--acc2)}
-.fchip.on{background:#dbeafe;border-color:var(--acc);color:var(--acc2)}
-.fchip.hp-chip.on{background:rgba(14,116,144,.12);border-color:var(--hp);color:var(--hp)}
-.fchip.bp-chip.on{background:rgba(26,86,219,.12);border-color:var(--bp);color:var(--bp)}
-
-/* UPSTREAM BADGE */
-.up-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10.5px;font-weight:700;color:#fff;white-space:nowrap}
-
-/* LOGIN */
-.login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8f0fe 0%,#f0f3f7 50%,#e8edf7 100%)}
-.login-box{width:420px;background:#fff;border:1px solid var(--bdr);border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(26,86,219,.12)}
-.l-brand{font-size:26px;font-weight:900;color:var(--acc);text-align:center}
-.l-tag{font-size:11px;color:var(--txt3);margin-top:3px;text-align:center;margin-bottom:28px}
-.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
-.demo-btn{background:#f5f8ff;border:1px solid var(--bdr);color:var(--txt2);padding:7px 9px;border-radius:var(--r6);font-size:11.5px;cursor:pointer;text-align:left;transition:all .13s}
-.demo-btn:hover{background:#dbeafe;border-color:var(--acc);color:var(--acc2)}
-.demo-btn.hp-demo:hover{background:rgba(14,116,144,.08);border-color:var(--hp);color:var(--hp)}
-.demo-rl{display:block;font-size:10px;color:var(--txt3);margin-top:2px}
-.demo-div{display:block;font-size:9.5px;font-weight:700;margin-top:1px}
-.demo-div.hp{color:var(--hp)}.demo-div.bp{color:var(--bp)}
-
-/* TOAST */
-.toast{position:fixed;bottom:22px;right:22px;z-index:300;padding:11px 18px;border-radius:var(--r10);font-weight:600;font-size:13px;box-shadow:var(--sh);animation:fadeUp .25s ease}
-.toast.s{background:var(--grn);color:#fff}.toast.e{background:var(--red);color:#fff}.toast.i{background:var(--acc);color:#fff}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* QR */
-.qr-box{background:linear-gradient(135deg,#1a56db,#0e7490);border-radius:var(--r12);padding:22px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
-.qr-box::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.04) 2px,rgba(255,255,255,.04) 4px)}
-.qr-frame{width:160px;height:160px;border:3px solid rgba(255,255,255,.6);border-radius:10px;margin:0 auto 12px;position:relative;display:flex;align-items:center;justify-content:center}
-.qr-corner{position:absolute;width:20px;height:20px;border-color:#fff;border-style:solid;border-radius:2px}
-.qr-corner.tl{top:-2px;left:-2px;border-width:3px 0 0 3px}
-.qr-corner.tr{top:-2px;right:-2px;border-width:3px 3px 0 0}
-.qr-corner.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px}
-.qr-corner.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0}
-.qr-scan-line{position:absolute;left:8px;right:8px;height:2px;background:rgba(255,255,255,.8);box-shadow:0 0 8px rgba(255,255,255,.6);animation:scanLine 2s linear infinite}
-@keyframes scanLine{0%{top:10%}100%{top:90%}}
-.qr-icon{font-size:48px}
-.qr-lbl{color:rgba(255,255,255,.9);font-size:12px;font-weight:600}
-.qr-result{background:#f0fdf4;border:1.5px solid var(--grn);border-radius:var(--r10);padding:14px;margin-bottom:14px}
-.qr-result-t{font-size:11px;font-weight:700;color:var(--grn);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:5px}
-.qr-field{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;font-size:12.5px}
-.qr-key{color:var(--txt3);font-weight:600}.qr-val{color:var(--txt);font-weight:700}
-.scan-demo-btns{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.scan-demo-btn{padding:9px 12px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:var(--r8);cursor:pointer;text-align:left;transition:all .13s;font-size:12.5px}
-.scan-demo-btn:hover{background:#dbeafe;border-color:var(--acc)}
-.scan-demo-lbl{font-weight:700;color:var(--acc2)}
-.scan-demo-sub{font-size:11px;color:var(--txt3);margin-top:1px}
-
-.s-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-
-/* SIDEBAR TOGGLE */
-.sb-toggle{display:none;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--bdr);border-radius:var(--r8);background:#fff;color:var(--txt2);font-size:18px;line-height:1;flex-shrink:0;transition:all .13s}
-.sb-toggle:hover{background:var(--bg3);color:var(--txt)}
-.sb-backdrop{display:none}
-
-@media (max-width:1024px){
-  html,body{overflow:auto}
-  #app,.app-shell{min-height:100vh;height:100dvh}
-  .sb-toggle{display:inline-flex}
-  .sb{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .22s ease, box-shadow .22s ease;box-shadow:none}
-  .sb.mob-open{transform:translateX(0);box-shadow:2px 0 24px rgba(0,0,0,.18)}
-  .sb-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.32);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:15}
-  .sb-backdrop.on{opacity:1;pointer-events:auto}
-  .main{width:100%}
-  .topbar{height:auto;min-height:50px;padding:10px 14px;flex-wrap:wrap;align-items:center}
-  .content{padding:14px}
-  .content.no-pad{padding:0}
-  .kpi-grid,.g2{grid-template-columns:1fr 1fr}
-  .kb-cards{max-height:none}
-}
-@media (max-width:768px){
-  .kpi-grid,.g2{grid-template-columns:1fr}
-  .st-grp{grid-template-columns:repeat(2,1fr)}
-  .cf-grid{grid-template-columns:1fr}
-  .login-box{width:min(420px,calc(100vw - 24px));padding:24px}
-}
-@media (max-width:640px){
-  body{font-size:13px}
-  .sb{width:min(290px,86vw);min-width:min(290px,86vw)}
-  .topbar{padding:10px 12px;gap:8px}
-  .tb-right{width:100%;margin-left:0;justify-content:flex-start}
-  .tog-grp{width:100%;order:3}
-  .tog-btn{flex:1}
-  .content{padding:12px}
-  .tbl-wrap{border-radius:var(--r8)}
-  table{font-size:12px}
-  th,td{padding:8px 9px}
-  .tc{padding:10px;align-items:flex-start;flex-wrap:wrap}
-  .tc-st{min-width:64px}
-  .tc-info{width:calc(100% - 75px)}
-  .btn-lg{width:100%;min-width:0}
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{position:absolute;left:0;top:0;width:100%;}
+  .no-print{display:none !important;}
 }
 </style>
 </head>
@@ -354,10 +189,10 @@ textarea.fi{resize:vertical;min-height:75px}
 <div id="app"></div>
 <script>
 // ============================================================
-// MASTER DATA
+// DATA & LOGIC STRUCTURE
 // ============================================================
 
-// BP（板金）工程
+// BP Stages
 const BP_STAGES=[
   {id:'bs1',code:'reservation',name:'予約',order:0,group:'受付',hrs:0,div:'bp'},
   {id:'bs2',code:'pickup',name:'引取り',order:1,group:'受付',hrs:1,div:'bp'},
@@ -376,1781 +211,464 @@ const BP_STAGES=[
   {id:'bs15',code:'delivery',name:'納車',order:14,group:'完了',hrs:.5,div:'bp'},
 ];
 
-// HP（一般整備）共通工程（車検・定点・一般整備）
-// テンプレートで組み合わせる
+// HP Stages (Terminology updated)
 const HP_STAGES=[
   {id:'hs1',code:'reservation',name:'予約',order:0,group:'受付',hrs:0,div:'hp'},
   {id:'hs2',code:'pickup',name:'引取り',order:1,group:'受付',hrs:1,div:'hp'},
   {id:'hs3',code:'checkin',name:'入庫受付',order:2,group:'受付',hrs:.5,div:'hp'},
   {id:'hs4',code:'estimate',name:'見積・作業指示',order:3,group:'受付',hrs:1,div:'hp'},
   {id:'hs5',code:'work',name:'作業',order:4,group:'作業',hrs:3,div:'hp'},
-  {id:'hs6',code:'quality_check',name:'できばえ確認',order:5,group:'品質',hrs:.5,div:'hp'},
+  {id:'hs6',code:'quality_check',name:'できばえ確認',order:5,group:'品質',hrs:.5,div:'hp'}, // Updated
   {id:'hs7',code:'shaken_insp',name:'検査（車検）',order:6,group:'品質',hrs:1,div:'hp'},
   {id:'hs8',code:'billing',name:'清算',order:7,group:'完了',hrs:.5,div:'hp'},
   {id:'hs9',code:'delivery',name:'納車',order:8,group:'完了',hrs:.5,div:'hp'},
 ];
 
-// 引取り・納車統合画面用（両事業共通）
-const TRANSFER_STAGE_CODES=['pickup','delivery','reservation'];
-
-// 全ステージ参照用
 const STAGES=[...BP_STAGES,...HP_STAGES];
 
+// Relational DB Simulation
+const CUSTOMERS_DB=[
+  {id:'c1',name:'三田村 康雄',phone:'090-1111-2222'},
+  {id:'c2',name:'前田 律子',phone:'080-3333-4444'},
+  {id:'c3',name:'堀田 直行',phone:'090-5555-6666'},
+  {id:'c4',name:'大野 紀子',phone:'070-7777-8888'}
+];
+const VEHICLES_DB=[
+  {id:'v1',customerId:'c1',maker:'トヨタ',model:'プリウス',plate:'品川 530 す 1234'},
+  {id:'v2',customerId:'c2',maker:'ホンダ',model:'フィット',plate:'練馬 330 む 1122'},
+  {id:'v3',customerId:'c3',maker:'マツダ',model:'CX-5',plate:'品川 302 と 7890'},
+  {id:'v4',customerId:'c4',maker:'ホンダ',model:'フリード',plate:'練馬 501 あ 5678'}
+];
+
 const USERS=[
-  // 管理者（全事業）
-  {id:'u1',name:'有松 真一',role:'admin',email:'arimatsu@nt-auto.com',div:'all'},
-  // BP事業
-  {id:'u2',name:'宮田 憲治',role:'manager',email:'miyata@nt-auto.com',div:'bp'},
-  {id:'u3',name:'田口 悟',role:'front',email:'taguchi@nt-auto.com',div:'bp'},
-  {id:'u4',name:'岩﨑 茂',role:'worker',email:'iwasaki@nt-auto.com',div:'bp'},
-  {id:'u5',name:'原田 卓宙',role:'worker',email:'harada@nt-auto.com',div:'bp'},
-  {id:'u6',name:'山﨑 国憲',role:'worker',email:'yamasaki@nt-auto.com',div:'bp'},
-  {id:'u7',name:'笠原 世浩',role:'worker',email:'kasahara@nt-auto.com',div:'bp'},
-  {id:'u8',name:'石川 博一',role:'inspector',email:'ishikawa@nt-auto.com',div:'bp'},
-  {id:'u9',name:'水島 国光',role:'front',email:'mizushima@nt-auto.com',div:'bp'},
-  // HP事業
-  {id:'u11',name:'佐藤 健一',role:'manager',email:'sato@nt-auto.com',div:'hp'},
-  {id:'u12',name:'鈴木 誠',role:'front',email:'suzuki@nt-auto.com',div:'hp'},
-  {id:'u13',name:'高橋 浩二',role:'worker',email:'takahashi@nt-auto.com',div:'hp'},
-  {id:'u14',name:'伊藤 直子',role:'worker',email:'ito@nt-auto.com',div:'hp'},
-  {id:'u15',name:'小林 和也',role:'inspector',email:'kobayashi@nt-auto.com',div:'hp'},
-  // 引取り・納車（共通）
-  {id:'u16',name:'渡辺 剛',role:'driver',email:'watanabe@nt-auto.com',div:'all'},
-  // 閲覧
-  {id:'u10',name:'佐川 賢一',role:'readonly',email:'sagawa@nt-auto.com',div:'all'},
+  {id:'u1',name:'有松 真一',role:'admin',div:'all'},
+  {id:'u2',name:'宮田 憲治',role:'manager',div:'bp'},
+  {id:'u3',name:'田口 悟',role:'front',div:'bp'},
+  {id:'u4',name:'岩﨑 茂',role:'worker',div:'bp'},
+  {id:'u12',name:'鈴木 誠',role:'front',div:'hp'},
+  {id:'u13',name:'高橋 浩二',role:'worker',div:'hp'},
+  {id:'u16',name:'渡辺 剛',role:'driver',div:'all'}
 ];
 
-const HOLD_REASONS=[
-  {id:'h1',code:'PARTS_WAIT',name:'部品未入荷待ち'},{id:'h2',code:'AGREEMENT_WAIT',name:'協定待ち'},
-  {id:'h3',code:'UPSTREAM_WAIT',name:'上流工程待ち'},{id:'h4',code:'EQUIPMENT_WAIT',name:'設備待ち'},
-  {id:'h5',code:'CUSTOMER_CONFIRM',name:'顧客確認待ち'},{id:'h6',code:'SUBCONTRACT_WAIT',name:'外注戻り待ち'},
-  {id:'h7',code:'OTHER',name:'その他'},
-];
-const BP_NG_REASONS=[
-  {id:'ng1',name:'塗装ムラ'},{id:'ng2',name:'パネル歪み残存'},
-  {id:'ng3',name:'クリア不足'},{id:'ng4',name:'バリ取り不足'},{id:'ng5',name:'洗車不十分'},
-];
-const HP_NG_REASONS=[
-  {id:'hng1',name:'整備不良'},{id:'hng2',name:'部品締め付け不足'},
-  {id:'hng3',name:'液体漏れ'},{id:'hng4',name:'異音残存'},{id:'hng5',name:'洗車不十分'},
-];
-
-// テンプレート（BP）
-const BP_TEMPLATES={
-  accident:{name:'事故修理（全損系）',stages:['bs1','bs2','bs3','bs4','bs5','bs6','bs7','bs8','bs10','bs11','bs12','bs13','bs14','bs15']},
-  insurance:{name:'保険板金',stages:['bs1','bs3','bs4','bs5','bs8','bs10','bs13','bs14','bs15']},
-  painting:{name:'全塗装',stages:['bs1','bs3','bs4','bs10','bs11','bs13','bs14','bs15']},
-  simple:{name:'簡易鈑金',stages:['bs3','bs4','bs8','bs11','bs12','bs14','bs15']},
-};
-// テンプレート（HP）
-const HP_TEMPLATES={
-  shaken:{name:'車検',stages:['hs1','hs3','hs4','hs5','hs6','hs7','hs8','hs9']},
-  teiten:{name:'定点点検',stages:['hs1','hs3','hs4','hs5','hs6','hs8','hs9']},
-  general:{name:'一般整備',stages:['hs3','hs4','hs5','hs6','hs8','hs9']},
-};
-
-const DEFAULT_BP_WIP={bs8:4,bs9:2,bs10:3,bs11:2,bs13:2};
-const DEFAULT_HP_WIP={hs5:5,hs6:3,hs7:2};
+// Removed 'ready' status
+const ST_LABELS={pending:'未着手',in_progress:'作業中',completed:'完了',hold:'保留'};
+const ST_COLORS={pending:'#64748b',in_progress:'#1d4ed8',completed:'#047857',hold:'#b91c1c'};
+const PD_ST_LABELS={pending:'納引待ち',in_progress:'納引中',completed:'納引完了'};
 
 const DEFAULT_UPSTREAMS=[
   {name:'NTS',color:'#1d4ed8'},{name:'自受け',color:'#047857'},
-  {name:'ホンダMM',color:'#b45309'},{name:'関東マツダ',color:'#dc2626'},
-  {name:'タイムズM',color:'#7c3aed'},{name:'東京スバル',color:'#0e7490'},
-  {name:'スズキ南',color:'#6b7280'},
+  {name:'ホンダMM',color:'#b45309'},{name:'関東マツダ',color:'#dc2626'}
 ];
 
-const ST_LABELS={pending:'未着手',in_progress:'作業中',completed:'完了'};
-const ST_COLORS={pending:'#64748b',in_progress:'#b45309',completed:'#047857'};
-const PRI_LABELS={urgent:'🔴 緊急',high:'🟠 急ぎ',normal:'⬜ 通常',low:'🟢 余裕'};
-const ROLE_LABELS={admin:'管理者',manager:'工場長',front:'フロント',worker:'作業者',
-  inspector:'検査員',parts:'部品係',process:'工程係',driver:'引取・納車',readonly:'閲覧専用'};
-const DIV_LABELS={hp:'HP事業（一般整備）',bp:'BP事業（板金）',all:'全事業'};
-
-const QR_DEMO_VEHICLES=[
-  {plate:'品川 530 す 1234',maker:'トヨタ',model:'プリウス',year:2022,vin:'JN1BABCM7N0123456',owner:'三田村 康雄',color:'パールホワイト',engine:'2ZR-FXE',disp:1800},
-  {plate:'練馬 501 あ 5678',maker:'ホンダ',model:'フリード',year:2023,vin:'JN3CABC1P0234567',owner:'大野 紀子',color:'プラチナホワイト',engine:'L15B',disp:1500},
-  {plate:'足立 302 え 9012',maker:'スズキ',model:'スペーシア',year:2024,vin:'SNE12ABC0P0345678',owner:'橘 正樹',color:'シルバー',engine:'R06A',disp:660},
-  {plate:'八王子 330 こ 3456',maker:'マツダ',model:'CX-5',year:2023,vin:'JN1T4BSA0P0456789',owner:'柏木 啓子',color:'ソウルレッド',engine:'SH-VPTS',disp:2200},
-  {plate:'多摩 580 く 2345',maker:'ダイハツ',model:'タント',year:2023,vin:'JN1FBAJ11P0567890',owner:'西村 加奈',color:'カーキ',engine:'KF-VE',disp:660},
-];
-
-// ============================================================
-// HELPERS
-// ============================================================
+// Helpers
 const today=new Date();
-const isoDate=d=>{const r=new Date(d);return r.toISOString().slice(0,10)};
+const isoDate=d=>{const x=new Date(d);return isNaN(x)?'':x.toISOString().slice(0,10)};
+const isoTime=d=>{const x=new Date(d);return isNaN(x)?'':x.toISOString().slice(11,16)};
 const addD=(d,n)=>isoDate(new Date(new Date(d).getTime()+n*86400000));
-const diffD=d=>d?Math.ceil((new Date(d)-today)/86400000):null;
-const fmtD=d=>d?new Date(d).toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'}):'—';
-const nextMon=()=>{const d=new Date();const dd=d.getDay();d.setDate(d.getDate()+(dd===0?1:8-dd));return isoDate(d)};
-const pad2=n=>String(n).padStart(2,'0');
-const isoDateTimeLocal=d=>{const x=new Date(d);return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}T${pad2(x.getHours())}:${pad2(x.getMinutes())}`};
-const fmtDT=d=>d?new Date(d).toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'未定';
-const addDT=(days,hour=9,min=0)=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(hour,min,0,0);return isoDateTimeLocal(d)};
-const plateFromVehicle=v=>{const parts=String(v||'').split('　');return parts[1]||''};
-const T=isoDate(today);
-const monthKey=d=>{if(!d)return'';const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`};
-const currentMonthKey=monthKey(today);
-const prevMonthKey=(()=>{const d=new Date(today);d.setMonth(d.getMonth()-1);return monthKey(d)})();
-const inRange=(d,from,to)=>{if(!d)return false;const v=String(d);if(from&&v<from)return false;if(to&&v>to)return false;return true;};
-const isCompactViewport=()=>window.matchMedia('(max-width: 1024px)').matches;
-
-function mkTasks(specs){
-  return specs.map((sp,i)=>({
-    id:`${sp.jid}_t${i}`,jobId:sp.jid,stageId:sp.s,sequence:i,
-    status:sp.st,assigneeId:sp.a||null,finishEta:sp.eta||null,
-    holdReasonId:sp.h||null,ngReasonId:null,reworkCount:sp.rw||0,
-    note:sp.note||'',version:1,completedAt:sp.st==='completed'?isoDate(addD(today,-1)):null,
-  }));
-}
-
-// ============================================================
-// SEED JOBS — BP 10件 + HP 8件
-// ============================================================
-const INIT_JOBS=[
-  // ── BP案件 ──
-  {id:'j1',jobNumber:'#20001',customerName:'三田村 康雄',vehicleName:'トヨタ プリウス　品川 530 す 1234',priority:'urgent',div:'bp',
-   entryDate:addD(today,-5),promisedDelivery:addD(today,1),internalDeadline:addD(today,0),
-   estimateAmount:320000,estimatePartsCost:90000,estimateLaborCost:65000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'後方追突。リア全損。保険対応',
-   tasks:mkTasks([
-     {jid:'j1',s:'bs1',st:'completed',a:'u3'},{jid:'j1',s:'bs3',st:'completed',a:'u3'},
-     {jid:'j1',s:'bs4',st:'completed',a:'u3'},{jid:'j1',s:'bs5',st:'completed',a:'u3'},
-     {jid:'j1',s:'bs7',st:'completed',a:'u2'},{jid:'j1',s:'bs8',st:'in_progress',a:'u4',eta:addD(today,1)},
-     {jid:'j1',s:'bs10',st:'pending'},{jid:'j1',s:'bs13',st:'pending'},
-     {jid:'j1',s:'bs14',st:'pending'},{jid:'j1',s:'bs15',st:'pending'},
-   ])},
-  {id:'j2',jobNumber:'#20002',customerName:'前田 律子',vehicleName:'ホンダ フィット　練馬 330 む 1122',priority:'urgent',div:'bp',
-   entryDate:addD(today,-10),promisedDelivery:T,internalDeadline:addD(today,-1),
-   estimateAmount:820000,estimatePartsCost:270000,estimateLaborCost:160000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'フロント正面衝突。高額修理',
-   tasks:mkTasks([
-     {jid:'j2',s:'bs1',st:'completed'},{jid:'j2',s:'bs2',st:'completed'},{jid:'j2',s:'bs3',st:'completed'},
-     {jid:'j2',s:'bs4',st:'completed',a:'u2'},{jid:'j2',s:'bs5',st:'completed',a:'u2'},
-     {jid:'j2',s:'bs7',st:'completed'},{jid:'j2',s:'bs8',st:'completed',a:'u4'},
-     {jid:'j2',s:'bs10',st:'completed',a:'u5'},{jid:'j2',s:'bs11',st:'completed',a:'u5'},
-     {jid:'j2',s:'bs12',st:'completed',a:'u7'},{jid:'j2',s:'bs13',st:'completed',a:'u8',rw:1},
-     {jid:'j2',s:'bs14',st:'in_progress',a:'u3'},{jid:'j2',s:'bs15',st:'pending'},
-   ])},
-  {id:'j3',jobNumber:'#20003',customerName:'堀田 直行',vehicleName:'マツダ CX-5　品川 302 と 7890',priority:'high',div:'bp',
-   entryDate:addD(today,-8),promisedDelivery:T,internalDeadline:addD(today,-1),
-   estimateAmount:185000,estimatePartsCost:48000,estimateLaborCost:37000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'左リアクォーター磨き傷',
-   tasks:mkTasks([
-     {jid:'j3',s:'bs1',st:'completed'},{jid:'j3',s:'bs3',st:'completed'},{jid:'j3',s:'bs4',st:'completed'},
-     {jid:'j3',s:'bs7',st:'completed'},{jid:'j3',s:'bs8',st:'completed',a:'u4'},
-     {jid:'j3',s:'bs10',st:'completed',a:'u5'},{jid:'j3',s:'bs11',st:'completed',a:'u5'},
-     {jid:'j3',s:'bs12',st:'completed',a:'u7'},
-     {jid:'j3',s:'bs13',st:'in_progress',a:'u8',eta:T},
-     {jid:'j3',s:'bs14',st:'pending'},{jid:'j3',s:'bs15',st:'pending'},
-   ])},
-  {id:'j4',jobNumber:'#20004',customerName:'大野 紀子',vehicleName:'ホンダ フリード　練馬 501 あ 5678',priority:'high',div:'bp',
-   entryDate:addD(today,-3),promisedDelivery:addD(today,2),internalDeadline:addD(today,1),
-   estimateAmount:195000,estimatePartsCost:52000,estimateLaborCost:42000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'右フロントフェンダー凹み',
-   tasks:mkTasks([
-     {jid:'j4',s:'bs1',st:'completed'},{jid:'j4',s:'bs3',st:'completed',a:'u3'},
-     {jid:'j4',s:'bs4',st:'completed',a:'u3'},{jid:'j4',s:'bs7',st:'completed',a:'u2'},
-     {jid:'j4',s:'bs8',st:'hold',a:'u4',h:'h1'},
-     {jid:'j4',s:'bs12',st:'pending'},{jid:'j4',s:'bs13',st:'pending'},
-     {jid:'j4',s:'bs14',st:'pending'},{jid:'j4',s:'bs15',st:'pending'},
-   ])},
-  {id:'j5',jobNumber:'#20005',customerName:'橘 正樹',vehicleName:'スズキ スペーシア　足立 302 え 9012',priority:'normal',div:'bp',
-   entryDate:addD(today,-2),promisedDelivery:addD(today,8),internalDeadline:addD(today,7),
-   estimateAmount:360000,estimatePartsCost:105000,estimateLaborCost:72000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'左側面3パネル。保険協定中',
-   tasks:mkTasks([
-     {jid:'j5',s:'bs1',st:'completed'},{jid:'j5',s:'bs3',st:'completed',a:'u3'},
-     {jid:'j5',s:'bs4',st:'completed',a:'u3'},{jid:'j5',s:'bs5',st:'in_progress',a:'u9',eta:addD(today,1)},
-     {jid:'j5',s:'bs8',st:'pending'},{jid:'j5',s:'bs10',st:'pending'},
-     {jid:'j5',s:'bs13',st:'pending'},{jid:'j5',s:'bs14',st:'pending'},{jid:'j5',s:'bs15',st:'pending'},
-   ])},
-  {id:'j6',jobNumber:'#20006',customerName:'柏木 啓子',vehicleName:'マツダ CX-5　八王子 330 こ 3456',priority:'normal',div:'bp',
-   entryDate:addD(today,-6),promisedDelivery:addD(today,4),internalDeadline:addD(today,3),
-   estimateAmount:445000,estimatePartsCost:135000,estimateLaborCost:95000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'フロント全周。エアバッグ展開',
-   tasks:mkTasks([
-     {jid:'j6',s:'bs1',st:'completed'},{jid:'j6',s:'bs3',st:'completed'},{jid:'j6',s:'bs4',st:'completed'},
-     {jid:'j6',s:'bs7',st:'completed'},{jid:'j6',s:'bs8',st:'completed',a:'u4'},
-     {jid:'j6',s:'bs10',st:'in_progress',a:'u5',eta:addD(today,2)},
-     {jid:'j6',s:'bs11',st:'pending'},{jid:'j6',s:'bs12',st:'pending'},
-     {jid:'j6',s:'bs13',st:'pending'},{jid:'j6',s:'bs14',st:'pending'},{jid:'j6',s:'bs15',st:'pending'},
-   ])},
-  {id:'j7',jobNumber:'#20007',customerName:'西村 加奈',vehicleName:'ダイハツ タント　多摩 580 く 2345',priority:'normal',div:'bp',
-   entryDate:addD(today,-1),promisedDelivery:addD(today,10),internalDeadline:addD(today,9),
-   estimateAmount:158000,estimatePartsCost:42000,estimateLaborCost:35000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'フロントバンパー交換',
-   tasks:mkTasks([
-     {jid:'j7',s:'bs1',st:'completed'},{jid:'j7',s:'bs2',st:'completed'},
-     {jid:'j7',s:'bs3',st:'completed'},{jid:'j7',s:'bs4',st:'in_progress',a:'u9',eta:T},
-     {jid:'j7',s:'bs8',st:'pending'},{jid:'j7',s:'bs13',st:'pending'},
-     {jid:'j7',s:'bs14',st:'pending'},{jid:'j7',s:'bs15',st:'pending'},
-   ])},
-  {id:'j8',jobNumber:'#20008',customerName:'杉本 隆司',vehicleName:'トヨタ ヴォクシー　八王子 582 あ 4433',priority:'normal',div:'bp',
-   entryDate:addD(today,-2),promisedDelivery:addD(today,9),internalDeadline:addD(today,8),
-   estimateAmount:230000,estimatePartsCost:65000,estimateLaborCost:50000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'スライドドア凹み・塗装剥げ',
-   tasks:mkTasks([
-     {jid:'j8',s:'bs1',st:'completed'},{jid:'j8',s:'bs3',st:'completed',a:'u9'},
-     {jid:'j8',s:'bs4',st:'in_progress',a:'u9',eta:addD(today,1)},
-     {jid:'j8',s:'bs8',st:'pending'},{jid:'j8',s:'bs10',st:'pending'},
-     {jid:'j8',s:'bs13',st:'pending'},{jid:'j8',s:'bs14',st:'pending'},{jid:'j8',s:'bs15',st:'pending'},
-   ])},
-  {id:'j9',jobNumber:'#20009',customerName:'松田 雅弘',vehicleName:'スズキ スペーシア　足立 581 い 8877',priority:'low',div:'bp',
-   entryDate:addD(today,-1),promisedDelivery:addD(today,14),internalDeadline:addD(today,13),
-   estimateAmount:95000,estimatePartsCost:25000,estimateLaborCost:22000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'リアバンパー小傷。板金不要',
-   tasks:mkTasks([
-     {jid:'j9',s:'bs3',st:'completed',a:'u9'},{jid:'j9',s:'bs4',st:'in_progress',a:'u9',eta:addD(today,1)},
-     {jid:'j9',s:'bs11',st:'pending'},{jid:'j9',s:'bs12',st:'pending'},
-     {jid:'j9',s:'bs14',st:'pending'},{jid:'j9',s:'bs15',st:'pending'},
-   ])},
-  {id:'j10',jobNumber:'#20010',customerName:'池田 雄介',vehicleName:'トヨタ ハイエース　品川 100 て 5544',priority:'high',div:'bp',
-   entryDate:addD(today,-7),promisedDelivery:addD(today,2),internalDeadline:addD(today,1),
-   estimateAmount:420000,estimatePartsCost:125000,estimateLaborCost:90000,actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'追突。リア全体損傷',
-   tasks:mkTasks([
-     {jid:'j10',s:'bs1',st:'completed'},{jid:'j10',s:'bs3',st:'completed'},{jid:'j10',s:'bs4',st:'completed'},
-     {jid:'j10',s:'bs5',st:'completed',a:'u2'},{jid:'j10',s:'bs7',st:'completed'},
-     {jid:'j10',s:'bs8',st:'in_progress',a:'u6',eta:addD(today,1)},
-     {jid:'j10',s:'bs10',st:'pending'},{jid:'j10',s:'bs13',st:'pending'},
-     {jid:'j10',s:'bs14',st:'pending'},{jid:'j10',s:'bs15',st:'pending'},
-   ])},
-  // ── HP案件（車検） ──
-  {id:'h1',jobNumber:'#30001',customerName:'三田村 康雄',vehicleName:'トヨタ プリウス　品川 530 す 1234',priority:'urgent',div:'hp',subType:'shaken',
-   entryDate:addD(today,-2),promisedDelivery:addD(today,1),internalDeadline:addD(today,0),
-   estimateAmount:95000,estimatePartsCost:22000,estimateLaborCost:18000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'法定24ヶ月点検・車検',
-   tasks:mkTasks([
-     {jid:'h1',s:'hs1',st:'completed',a:'u12'},{jid:'h1',s:'hs3',st:'completed',a:'u12'},
-     {jid:'h1',s:'hs4',st:'completed',a:'u12'},{jid:'h1',s:'hs5',st:'in_progress',a:'u13',eta:addD(today,1)},
-     {jid:'h1',s:'hs6',st:'pending'},{jid:'h1',s:'hs7',st:'pending'},
-     {jid:'h1',s:'hs8',st:'pending'},{jid:'h1',s:'hs9',st:'pending'},
-   ])},
-  {id:'h2',jobNumber:'#30002',customerName:'大野 紀子',vehicleName:'ホンダ フリード　練馬 501 あ 5678',priority:'normal',div:'hp',subType:'shaken',
-   entryDate:addD(today,-1),promisedDelivery:addD(today,2),internalDeadline:addD(today,1),
-   estimateAmount:85000,estimatePartsCost:18000,estimateLaborCost:15000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'2年継続車検',
-   tasks:mkTasks([
-     {jid:'h2',s:'hs1',st:'completed'},{jid:'h2',s:'hs3',st:'completed',a:'u12'},
-     {jid:'h2',s:'hs4',st:'in_progress',a:'u12',eta:T},
-     {jid:'h2',s:'hs5',st:'pending'},{jid:'h2',s:'hs6',st:'pending'},{jid:'h2',s:'hs7',st:'pending'},
-     {jid:'h2',s:'hs8',st:'pending'},{jid:'h2',s:'hs9',st:'pending'},
-   ])},
-  {id:'h3',jobNumber:'#30003',customerName:'橘 正樹',vehicleName:'スズキ スペーシア　足立 302 え 9012',priority:'normal',div:'hp',subType:'teiten',
-   entryDate:today.toISOString().slice(0,10),promisedDelivery:addD(today,1),internalDeadline:addD(today,0),
-   estimateAmount:35000,estimatePartsCost:8000,estimateLaborCost:7000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'12ヶ月定期点検',
-   tasks:mkTasks([
-     {jid:'h3',s:'hs3',st:'completed',a:'u12'},{jid:'h3',s:'hs4',st:'completed',a:'u12'},
-     {jid:'h3',s:'hs5',st:'in_progress',a:'u13',eta:T},
-     {jid:'h3',s:'hs6',st:'pending'},{jid:'h3',s:'hs8',st:'pending'},{jid:'h3',s:'hs9',st:'pending'},
-   ])},
-  {id:'h4',jobNumber:'#30004',customerName:'柏木 啓子',vehicleName:'マツダ CX-5　八王子 330 こ 3456',priority:'normal',div:'hp',subType:'general',
-   entryDate:addD(today,-1),promisedDelivery:addD(today,3),internalDeadline:addD(today,2),
-   estimateAmount:42000,estimatePartsCost:12000,estimateLaborCost:10000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'エンジンオイル・ブレーキパッド交換',
-   tasks:mkTasks([
-     {jid:'h4',s:'hs3',st:'completed',a:'u12'},{jid:'h4',s:'hs4',st:'completed',a:'u12'},
-     {jid:'h4',s:'hs5',st:'in_progress',a:'u14',eta:addD(today,1)},
-     {jid:'h4',s:'hs6',st:'pending'},{jid:'h4',s:'hs8',st:'pending'},{jid:'h4',s:'hs9',st:'pending'},
-   ])},
-  {id:'h5',jobNumber:'#30005',customerName:'西村 加奈',vehicleName:'ダイハツ タント　多摩 580 く 2345',priority:'normal',div:'hp',subType:'shaken',
-   entryDate:addD(today,-3),promisedDelivery:addD(today,0),internalDeadline:addD(today,-1),
-   estimateAmount:78000,estimatePartsCost:16000,estimateLaborCost:14000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'ユーザー車検。整備込み',
-   tasks:mkTasks([
-     {jid:'h5',s:'hs1',st:'completed'},{jid:'h5',s:'hs3',st:'completed',a:'u12'},
-     {jid:'h5',s:'hs4',st:'completed',a:'u12'},{jid:'h5',s:'hs5',st:'completed',a:'u13'},
-     {jid:'h5',s:'hs6',st:'completed',a:'u13'},{jid:'h5',s:'hs7',st:'in_progress',a:'u15',eta:T},
-     {jid:'h5',s:'hs8',st:'pending'},{jid:'h5',s:'hs9',st:'pending'},
-   ])},
-  {id:'h6',jobNumber:'#30006',customerName:'杉本 隆司',vehicleName:'トヨタ ヴォクシー　八王子 582 あ 4433',priority:'low',div:'hp',subType:'general',
-   entryDate:addD(today,-1),promisedDelivery:addD(today,5),internalDeadline:addD(today,4),
-   estimateAmount:55000,estimatePartsCost:15000,estimateLaborCost:12000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'タイヤ4本交換・アライメント調整',
-   tasks:mkTasks([
-     {jid:'h6',s:'hs3',st:'completed',a:'u12'},{jid:'h6',s:'hs4',st:'in_progress',a:'u12',eta:T},
-     {jid:'h6',s:'hs5',st:'pending'},{jid:'h6',s:'hs6',st:'pending'},
-     {jid:'h6',s:'hs8',st:'pending'},{jid:'h6',s:'hs9',st:'pending'},
-   ])},
-  {id:'h7',jobNumber:'#30007',customerName:'松田 雅弘',vehicleName:'スズキ スペーシア　足立 581 い 8877',priority:'normal',div:'hp',subType:'teiten',
-   entryDate:addD(today,-2),promisedDelivery:addD(today,2),internalDeadline:addD(today,1),
-   estimateAmount:28000,estimatePartsCost:6000,estimateLaborCost:5500,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'6ヶ月定期点検',
-   tasks:mkTasks([
-     {jid:'h7',s:'hs3',st:'completed',a:'u12'},{jid:'h7',s:'hs4',st:'completed',a:'u12'},
-     {jid:'h7',s:'hs5',st:'completed',a:'u14'},{jid:'h7',s:'hs6',st:'in_progress',a:'u14',eta:T},
-     {jid:'h7',s:'hs8',st:'pending'},{jid:'h7',s:'hs9',st:'pending'},
-   ])},
-  {id:'h8',jobNumber:'#30008',customerName:'池田 雄介',vehicleName:'トヨタ ハイエース　品川 100 て 5544',priority:'high',div:'hp',subType:'shaken',
-   entryDate:addD(today,-4),promisedDelivery:addD(today,1),internalDeadline:addD(today,0),
-   estimateAmount:120000,estimatePartsCost:30000,estimateLaborCost:25000,
-   actualAmount:null,settlementStatus:'unsettled',status:'in_progress',version:1,note:'1年車検。大型車',
-   tasks:mkTasks([
-     {jid:'h8',s:'hs1',st:'completed'},{jid:'h8',s:'hs3',st:'completed',a:'u12'},
-     {jid:'h8',s:'hs4',st:'completed',a:'u12'},{jid:'h8',s:'hs5',st:'completed',a:'u13'},
-     {jid:'h8',s:'hs6',st:'hold',a:'u13',h:'h3'},
-     {jid:'h8',s:'hs7',st:'pending'},{jid:'h8',s:'hs8',st:'pending'},{jid:'h8',s:'hs9',st:'pending'},
-   ])},
-];
-
-// ============================================================
-// STATE
-// ============================================================
-function buildDefaultKpiTargets(div){
-  const base=new Date(today.getFullYear(),today.getMonth(),1);
-  const arr=[];
-  const defaults=div==='hp'
-    ?{salesTarget:3500,profitTarget:900,countTarget:50}
-    :{salesTarget:9000,profitTarget:2200,countTarget:24};
-  for(let i=-1;i<11;i++){
-    const d=new Date(base);d.setMonth(base.getMonth()+i);
-    arr.push({month:monthKey(d),...defaults});
-  }
-  return arr;
-}
+const diffD=d=>d?Math.ceil((new Date(d.split('T')[0])-new Date(isoDate(today)))/86400000):null;
+const fmtD=d=>d?new Date(d).toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(' 00:00',''):'—';
 
 let STATE={
-  user:null,view:'myview',
-  users:JSON.parse(JSON.stringify(USERS)),
-  jobs:JSON.parse(JSON.stringify(INIT_JOBS)).map((j,i)=>{
-    const frontOwnerId=j.div==='hp'
-      ?(['u12'][i%1])
-      :(j.tasks.find(t=>['u1','u2','u3','u9'].includes(t.assigneeId))?.assigneeId)||(['u3','u9'][i%2]);
-    const promised=j.promisedDelivery||j.entryDate;
-    return{
-      ...j,
-      upstream:DEFAULT_UPSTREAMS[i%DEFAULT_UPSTREAMS.length].name,
-      settlementDate:j.settlementDate||promised,
-      frontOwnerId:j.frontOwnerId||frontOwnerId,
-      createdBy:j.createdBy||frontOwnerId
-    };
-  }),
-  selectedJob:null,selectedTask:null,
-  modal:null,conflictData:null,qrScanned:null,
-  listFilter:'all',listUpstream:'all',listSort:'dateDesc',listDiv:'all',
-  customerUpstream:'all',
-  dashboardPeriod:'currentMonth',dashDiv:'bp',
-  masterTab:'stages',masterDiv:'bp',jobDetailTab:'flow',
-  kanbanView:'transfer',// 'transfer'|'hp'|'bp'
-  kanbanMode:'scroll',
-  sidebarOpen:false,
-  upstreams:JSON.parse(JSON.stringify(DEFAULT_UPSTREAMS)),
-  bpKpiTargets:buildDefaultKpiTargets('bp'),
-  hpKpiTargets:buildDefaultKpiTargets('hp'),
-  bpWipLimits:{...DEFAULT_BP_WIP},
-  hpWipLimits:{...DEFAULT_HP_WIP},
-  toast:null,toastTimer:null,
+  user:USERS[0], view:'myview', kanbanMode:'scroll',
+  jobs:[], upstreams:DEFAULT_UPSTREAMS,
+  toast:null, toastTimer:null, modal:null, selectedJob:null
 };
-function setState(patch){
-  if(typeof patch==='function')patch=patch(STATE);
-  Object.assign(STATE,patch);
-  render();
-}
+
+function setState(patch){ Object.assign(STATE,typeof patch==='function'?patch(STATE):patch); render(); }
+
 function showToast(msg,type='s'){
-  clearTimeout(STATE.toastTimer);
-  const t=setTimeout(()=>setState({toast:null,toastTimer:null}),3000);
-  setState({toast:{msg,type},toastTimer:t});
+  if(STATE.toastTimer) clearTimeout(STATE.toastTimer);
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=(type==='s'?'✅ ':type==='e'?'❌ ':'ℹ️ ')+msg;
+  document.body.appendChild(el);
+  const tId=setTimeout(()=>{
+    el.classList.add('hide');
+    setTimeout(()=>el.remove(),300);
+  },3000);
+  setState({toastTimer:tId});
 }
 
-function normalizeJob(j){
-  const pdel=j.pickupPlannedAt||addDT(0,9,0);
-  const ddel=j.deliveryPlannedAt||addDT(Math.max(0,diffD(j.promisedDelivery||T)),17,0);
-  return {
-    ...j,
-    upstream:j.upstream||'自受け',
-    plateNumber:j.plateNumber||plateFromVehicle(j.vehicleName),
-    vehicleId:j.vehicleId||null,
-    customerId:j.customerId||null,
-    receptionPlannedAt:j.receptionPlannedAt||addDT(0,9,0),
-    pickupPlannedAt:pdel,
-    workPlannedAt:j.workPlannedAt||addDT(0,10,0),
-    completionPlannedAt:j.completionPlannedAt||ddel,
-    deliveryPlannedAt:ddel,
-    assignedWorkerId:j.assignedWorkerId||null,
-    status:j.status||'open',
-    tasks:(j.tasks||[]).map((t,idx)=>({
-      ...t,
-      status:(t.status==='ready'||t.status==='hold')?'pending':t.status,
-      finishEta:t.finishEta||addD(today,idx+1),
-    }))
-  };
-}
-function buildCustomerVehicleState(jobs){
-  const customers=[];
-  const vehicles=[];
-  const cMap=new Map();
-  const vMap=new Map();
-  jobs.forEach((j,idx)=>{
-    const cname=j.customerName||`顧客${idx+1}`;
-    let cid=cMap.get(cname);
-    if(!cid){cid=`c${cMap.size+1}`;cMap.set(cname,cid);customers.push({id:cid,name:cname,phone:j.customerPhone||'',memo:''});}
-    const vkey=`${cname}__${j.vehicleName}`;
-    let vid=vMap.get(vkey);
-    if(!vid){vid=`v${vMap.size+1}`;vMap.set(vkey,vid);vehicles.push({id:vid,customerId:cid,vehicleName:j.vehicleName,plateNumber:j.plateNumber||plateFromVehicle(j.vehicleName),maker:(j.vehicleName||'').split(' ')[0]||'',model:(j.vehicleName||'').split(' ')[1]||'',memo:''});}
-    j.customerId=cid; j.vehicleId=vid; j.plateNumber=j.plateNumber||plateFromVehicle(j.vehicleName);
-  });
-  return {customers,vehicles};
-}
-function jobsWithNormalizedMasters(rawJobs){
-  const jobs=rawJobs.map(normalizeJob);
-  const m=buildCustomerVehicleState(jobs);
-  return {jobs,customers:m.customers,vehicles:m.vehicles};
-}
-function getCustomerById(id){return (STATE.customers||[]).find(c=>c.id===id);}
-function getVehicleById(id){return (STATE.vehicles||[]).find(v=>v.id===id);}
-function getVehiclesByCustomer(customerId){return (STATE.vehicles||[]).filter(v=>v.customerId===customerId);}
-function syncMastersFromJob(job){
-  let customers=[...(STATE.customers||[])];
-  let vehicles=[...(STATE.vehicles||[])];
-  let customerId=job.customerId;
-  let customer=customers.find(c=>c.id===customerId)||customers.find(c=>c.name===job.customerName);
-  if(!customer){customer={id:`c${Date.now()}`,name:job.customerName,phone:'',memo:''};customers.push(customer);}
-  customerId=customer.id;
-  let vehicle=vehicles.find(v=>v.id===job.vehicleId)||vehicles.find(v=>v.customerId===customerId&&v.vehicleName===job.vehicleName);
-  if(!vehicle){vehicle={id:`v${Date.now()}`,customerId,vehicleName:job.vehicleName,plateNumber:job.plateNumber||plateFromVehicle(job.vehicleName),maker:(job.vehicleName||'').split(' ')[0]||'',model:(job.vehicleName||'').split(' ')[1]||'',memo:''};vehicles.push(vehicle);}
-  return {customers,vehicles,job:{...job,customerId,vehicleId:vehicle.id,plateNumber:vehicle.plateNumber||job.plateNumber||plateFromVehicle(job.vehicleName)}};
+function initData(){
+  const mkT=(jid,sid,st,a=null)=>({id:`${jid}_${sid}`,stageId:sid,status:st,assigneeId:a,completedAt:st==='completed'?isoDate(today):null});
+  STATE.jobs=[
+    {id:'j1',jobNumber:'#20001',customerId:'c1',customerName:'三田村 康雄',vehicleName:'トヨタ プリウス　品川 530 す 1234',div:'bp',priority:'urgent',
+     upstream:'NTS', entryDate:addD(today,-2), promisedPickup:isoDate(today)+'T10:00', promisedDelivery:isoDate(today)+'T18:00',
+     estimateAmount:120000, tasks:[mkT('j1','bs1','completed','u3'), mkT('j1','bs2','completed','u16'), mkT('j1','bs8','in_progress','u4'), mkT('j1','bs15','pending')]},
+    {id:'j2',jobNumber:'#20002',customerId:'c4',customerName:'大野 紀子',vehicleName:'ホンダ フリード　練馬 501 あ 5678',div:'hp',priority:'normal',
+     upstream:'関東マツダ', entryDate:isoDate(today), promisedPickup:addD(today,1)+'T09:00', promisedDelivery:addD(today,2)+'T17:00',
+     estimateAmount:45000, tasks:[mkT('j2','hs1','pending'), mkT('j2','hs2','pending','u16'), mkT('j2','hs5','pending'), mkT('j2','hs9','pending')]},
+    {id:'j3',jobNumber:'#20003',customerId:'c2',customerName:'前田 律子',vehicleName:'ホンダ フィット　練馬 330 む 1122',div:'bp',priority:'normal',
+     upstream:'自受け', entryDate:addD(today,-5), promisedDelivery:addD(today,-1)+'T12:00',
+     estimateAmount:250000, tasks:[mkT('j3','bs1','completed'), mkT('j3','bs8','completed','u4'), mkT('j3','bs15','pending','u16')]} // 納車待ち、期限切れ
+  ];
 }
 
 // ============================================================
-// HELPERS 2
-// ============================================================
-function getCurTask(job){
-  return job.tasks.find(t=>t.status==='in_progress')
-      || job.tasks.find(t=>t.status==='pending')
-      || job.tasks[job.tasks.length-1];
-}
-function getCurStageName(job){const t=getCurTask(job);const s=STAGES.find(s=>s.id===t?.stageId);return s?.name||'—';}
-function getUsers(){return STATE.users||USERS;}
-function getUserById(id){return getUsers().find(u=>u.id===id);}
-function getUpstreamMaster(name){return (STATE.upstreams||[]).find(u=>(typeof u==='string'?u:u.name)===name);}
-function getUpstreamOptions(){return (STATE.upstreams||[]).map(u=>typeof u==='string'?u:u.name).filter(Boolean);}
-function getUpstreamColor(name){return getUpstreamMaster(name)?.color||'var(--acc2)';}
-function getUpstreamShort(name){return Array.from(String(name||'自受け')).slice(0,2).join('');}
-function upstreamBadge(name){
-  return `<span class="up-badge" style="background:${getUpstreamColor(name)}">${name||'自受け'}</span>`;
-}
-function divTag(div){
-  return `<span class="div-tag ${div}">${div==='hp'?'HP':'BP'}</span>`;
-}
-function subTypeLabel(st){
-  return {shaken:'🔍車検',teiten:'📋定点',general:'🔧一般'}[st]||'';
-}
-function canEdit(user,task,job){
-  if(!user||user.role==='readonly')return false;
-  if(user.role==='admin')return true;
-  if(user.div!=='all'&&user.div!==job?.div)return false;
-  if(['manager'].includes(user.role))return true;
-  if(user.role==='front')return (job?.frontOwnerId||'')===user.id;
-  if(user.role==='driver'){
-    const s=STAGES.find(s=>s.id===task?.stageId);
-    return TRANSFER_STAGE_CODES.includes(s?.code);
-  }
-  return ['worker','inspector','parts','process'].includes(user.role)&&task?.assigneeId===user.id;
-}
-function canEditFinance(user,job){
-  if(!user||user.role==='readonly'||['worker','inspector','parts','process','driver'].includes(user.role))return false;
-  if(user.role==='admin')return true;
-  if(user.div!=='all'&&user.div!==job?.div)return false;
-  if(user.role==='manager')return true;
-  return user.role==='front'&&(job?.frontOwnerId||'')===user.id;
-}
-function canEditJob(user,job){
-  if(!user||user.role==='readonly'||['worker','inspector','parts','process','driver'].includes(user.role))return false;
-  if(user.role==='admin')return true;
-  if(user.div!=='all'&&user.div!==job?.div)return false;
-  if(user.role==='manager')return true;
-  return user.role==='front'&&(job?.frontOwnerId||'')===user.id;
-}
-function canSeeMoney(user){return['admin','manager','front'].includes(user?.role);}
-function getProfit(j){return (j.estimateAmount||0)-(j.estimatePartsCost||0)-(j.estimateLaborCost||0);}
-function getTaskByStageCode(job,code){
-  return (job.tasks||[]).find(t=>{
-    const s=STAGES.find(x=>x.id===t.stageId);
-    return s?.code===code;
-  })||null;
-}
-function getActiveTransferItem(j){
-  const pickupTask=getTaskByStageCode(j,'pickup');
-  const deliveryTask=getTaskByStageCode(j,'delivery');
-  const pickupStage=pickupTask?STAGES.find(s=>s.id===pickupTask.stageId):null;
-  const deliveryStage=deliveryTask?STAGES.find(s=>s.id===deliveryTask.stageId):null;
-
-  // 引取り・納車カンバンは同一車両を1件だけ表示する。
-  // 優先順位は「引取り > 納車」。予約段階は引取り未実施として扱う。
-  if(pickupTask && pickupTask.status!=='completed'){
-    return {job:j,task:pickupTask,stage:pickupStage,type:'pickup',plannedAt:j.pickupPlannedAt||''};
-  }
-  if(deliveryTask && deliveryTask.status!=='completed'){
-    return {job:j,task:deliveryTask,stage:deliveryStage,type:'delivery',plannedAt:j.deliveryPlannedAt||''};
-  }
-  return null;
-}
-function escapeHtml(v){
-  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function buildTransferPrintHtml(items){
-  const groups={};
-  items.forEach(x=>{
-    const key=x.job.upstream||'自受け';
-    (groups[key]||(groups[key]=[])).push(x);
-  });
-  const groupHtml=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'ja')).map(up=>{
-    const rows=groups[up]
-      .sort((a,b)=>String(a.plannedAt||'9999').localeCompare(String(b.plannedAt||'9999')))
-      .map((x,idx)=>`<tr>
-        <td>${idx+1}</td>
-        <td>${x.type==='pickup'?'引取り':'納車'}</td>
-        <td>${escapeHtml(x.job.div?.toUpperCase()||'')}</td>
-        <td>${escapeHtml(x.job.jobNumber||'')}</td>
-        <td>${escapeHtml(x.job.customerName||'')}</td>
-        <td>${escapeHtml(x.job.vehicleName||'')}</td>
-        <td>${escapeHtml(x.job.plateNumber||'')}</td>
-        <td>${escapeHtml(fmtDT(x.plannedAt)||'')}</td>
-        <td>${escapeHtml(x.task.assigneeId?getUserById(x.task.assigneeId)?.name:'未確定')}</td>
-        <td>${escapeHtml(x.job.note||'')}</td>
-      </tr>`).join('');
-    return `<section style="margin-bottom:24px">
-      <div style="font-size:18px;font-weight:800;margin:0 0 8px 0;padding-bottom:6px;border-bottom:2px solid #111">元請：${escapeHtml(up)}</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead>
-          <tr>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">No.</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">区分</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">事業</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">案件番号</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">顧客</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">車両</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">登録番号</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">予定日時</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">担当</th>
-            <th style="border:1px solid #999;padding:6px;background:#f3f4f6">備考</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </section>`;
-  }).join('') || '<div>印刷対象がありません。</div>';
-  return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>Ams PRO V2.3.2 引取り・納車リスト</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:24px;color:#111}h1{font-size:24px;margin:0 0 4px 0}p.meta{margin:0 0 20px 0;color:#555;font-size:12px}@media print{body{margin:12mm}section{break-inside:avoid}}</style></head><body><h1>引取り・納車リスト</h1><p class="meta">出力日時：${escapeHtml(new Date().toLocaleString('ja-JP'))}</p>${groupHtml}<script>window.onload=function(){window.print();};<\/script></body></html>`;
-}
-function openTransferPrintWindow(){
-  const items=STATE.jobs.map(getActiveTransferItem).filter(Boolean).filter(x=>x.plannedAt);
-  const w=window.open('','_blank','width=1200,height=800');
-  if(!w){alert('印刷画面を開けませんでした。ブラウザのポップアップブロックを解除してください。');return;}
-  w.document.open();
-  w.document.write(buildTransferPrintHtml(items));
-  w.document.close();
-}
-function getPeriodJobs(period,div){
-  const nextMonthKey=(()=>{const d=new Date(today);d.setMonth(d.getMonth()+1);return monthKey(d);})();
-  let jobs=div&&div!=='all'?STATE.jobs.filter(j=>j.div===div):STATE.jobs;
-  if(period==='all')return jobs;
-  return jobs.filter(j=>{
-    const k=monthKey(j.settlementDate||j.promisedDelivery||j.entryDate);
-    return period==='nextMonth'?k===nextMonthKey:k===currentMonthKey;
-  });
-}
-function getKpiTarget(period,div){
-  const targets=div==='hp'?STATE.hpKpiTargets:STATE.bpKpiTargets;
-  const nextMonthKey=(()=>{const d=new Date(today);d.setMonth(d.getMonth()+1);return monthKey(d);})();
-  const keys=period==='all'
-    ?[...new Set(getPeriodJobs('all',div).map(j=>monthKey(j.settlementDate||j.promisedDelivery||j.entryDate)).filter(Boolean))]
-    :[period==='nextMonth'?nextMonthKey:currentMonthKey];
-  return (targets||[]).filter(t=>keys.includes(t.month)).reduce((acc,t)=>({
-    salesTarget:acc.salesTarget+((parseInt(t.salesTarget,10)||0)*1000),
-    profitTarget:acc.profitTarget+((parseInt(t.profitTarget,10)||0)*1000),
-    countTarget:acc.countTarget+(parseInt(t.countTarget,10)||0)
-  }),{salesTarget:0,profitTarget:0,countTarget:0});
-}
-function updateTask(jobId,taskId,changes,clientVer){
-  let conflict=null;
-  const jobs=STATE.jobs.map(j=>{
-    if(j.id!==jobId)return j;
-    return{...j,tasks:j.tasks.map(t=>{
-      if(t.id!==taskId)return t;
-      if(t.version!==clientVer){conflict={task:{...t},attempted:changes,clientVer};return t;}
-      return{...t,...changes,version:t.version+1};
-    })};
-  });
-  if(conflict){setState({jobs,conflictData:conflict,selectedJob:jobs.find(j=>j.id===jobId),modal:'conflict'});return false;}
-  setState({jobs});return true;
-}
-function updateJob(jobId,changes){
-  const jobs=STATE.jobs.map(j=>j.id===jobId?{...j,...changes,version:(j.version||1)+1}:j);
-  const selected=jobs.find(j=>j.id===jobId)||null;
-  setState({jobs,selectedJob:selected});
-  return selected;
-}
-function getStagesForDiv(div){return div==='hp'?HP_STAGES:BP_STAGES;}
-function getTemplatesForDiv(div){return div==='hp'?HP_TEMPLATES:BP_TEMPLATES;}
-function getWipLimits(div){return div==='hp'?STATE.hpWipLimits:STATE.bpWipLimits;}
-function getNgReasons(div){return div==='hp'?HP_NG_REASONS:BP_NG_REASONS;}
-function getUsersForDiv(div){
-  return getUsers().filter(u=>u.div===div||u.div==='all');
-}
-function getUserDefaultView(user){
-  if(!user)return'myview';
-  if(user.role==='driver')return'kanban';
-  return'myview';
-}
-
-// ============================================================
-// RENDER
+// RENDER & VIEWS
 // ============================================================
 function render(){
   const root=document.getElementById('app');
   if(!root)return;
-  if(!STATE.user){root.innerHTML=loginHTML();bindLogin();return;}
   root.innerHTML=shellHTML();
-  bindAll();
-  document.querySelectorAll('.toast').forEach(el=>el.remove());
-  if(STATE.toast){
-    const el=document.createElement('div');
-    el.className=`toast ${STATE.toast.type}`;
-    el.textContent=(STATE.toast.type==='s'?'✅ ':STATE.toast.type==='e'?'❌ ':'ℹ️ ')+STATE.toast.msg;
-    document.body.appendChild(el);
-  }
+  bindEvents();
 }
 
-// ============================================================
-// LOGIN
-// ============================================================
-function loginHTML(){
-  const allUsers=getUsers().filter(u=>u.role!=='readonly');
-  const bpUsers=allUsers.filter(u=>u.div==='bp'||u.div==='all');
-  const hpUsers=allUsers.filter(u=>u.div==='hp');
-  const driverUsers=allUsers.filter(u=>u.role==='driver');
-  return`<div class="login-bg"><div class="login-box">
-    <div class="l-brand">🔧 Ams PRO</div>
-    <div class="l-tag">自動車工程管理システム v2.2</div>
-    <div class="fg"><label class="flbl">メールアドレス</label>
-      <input class="fi" id="l-em" value="arimatsu@nt-auto.com"></div>
-    <div class="fg"><label class="flbl">パスワード</label>
-      <input class="fi" id="l-pw" type="password" value="" placeholder="demo" autocomplete="new-password"></div>
-    <div id="l-err"></div>
-    <button class="btn btn-p" id="l-go" style="width:100%;margin-top:4px">ログイン →</button>
-    <div style="margin-top:18px;border-top:1px solid var(--bdr);padding-top:14px">
-      <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;font-weight:700">🔵 BP事業（板金）</div>
-      <div class="demo-grid" style="margin-bottom:10px">
-        ${bpUsers.map(u=>`<button class="demo-btn" data-em="${u.email}">${u.name}<span class="demo-rl">${ROLE_LABELS[u.role]}</span></button>`).join('')}
-      </div>
-      <div style="font-size:11px;color:var(--cyn);margin-bottom:6px;font-weight:700">🩵 HP事業（一般整備）</div>
-      <div class="demo-grid" style="margin-bottom:10px">
-        ${hpUsers.map(u=>`<button class="demo-btn hp-demo" data-em="${u.email}">${u.name}<span class="demo-rl">${ROLE_LABELS[u.role]}</span></button>`).join('')}
-      </div>
-      <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;font-weight:700">🚗 引取り・納車</div>
-      <div class="demo-grid">
-        ${driverUsers.map(u=>`<button class="demo-btn" data-em="${u.email}">${u.name}<span class="demo-rl">${ROLE_LABELS[u.role]}</span></button>`).join('')}
-      </div>
-    </div>
-  </div></div>`;
-}
-function bindLogin(){
-  document.querySelectorAll('.demo-btn').forEach(b=>b.addEventListener('click',()=>{document.getElementById('l-em').value=b.dataset.em;}));
-  const go=()=>{
-    const em=document.getElementById('l-em').value.trim();
-    const u=getUsers().find(u=>u.email===em);
-    if(!u){document.getElementById('l-err').innerHTML='<div class="alert danger">⚠️ メールアドレスが見つかりません</div>';return;}
-    const defaultView=getUserDefaultView(u);
-    const defaultKanban=u.div==='hp'?'hp':u.div==='bp'?'bp':'transfer';
-    setState({user:u,view:defaultView,kanbanView:defaultKanban});
-  };
-  document.getElementById('l-go').addEventListener('click',go);
-  document.getElementById('l-em').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
-}
-
-// ============================================================
-// SHELL
-// ============================================================
 function shellHTML(){
-  const {user,view,jobs}=STATE;
-  const overdue=jobs.filter(j=>diffD(j.promisedDelivery)<0).length;
-  const holds=jobs.filter(j=>j.tasks.some(t=>t.status==='hold')).length;
-  const bpHolds=jobs.filter(j=>j.div==='bp'&&j.tasks.some(t=>t.status==='hold')).length;
-  const hpHolds=jobs.filter(j=>j.div==='hp'&&j.tasks.some(t=>t.status==='hold')).length;
+  const {user,view}=STATE;
+  const nav=[
+    {v:'myview',l:'👤 マイビュー'}, {v:'dashboard',l:'📊 ダッシュボード'},
+    {v:'kanban',l:'🚗 引取り・納車'}, {v:'bp_kanban',l:'🔵 BPカンバン'}, {v:'hp_kanban',l:'🩵 HPカンバン'}
+  ].map(i=>`<button class="nav-btn ${view===i.v?'on':''}" data-view="${i.v}">${i.l}</button>`).join('');
 
-  // ナビ：ユーザーのdivに応じて出し分け
-  const showBP=user.div==='bp'||user.div==='all'||user.role==='admin';
-  const showHP=user.div==='hp'||user.div==='all'||user.role==='admin';
-  const showBoth=showBP&&showHP;
-
-  const navItems=[
-    {v:'myview',i:'👤',l:'マイビュー'},
-    user.role==='driver'?null:{v:'sep'},
-    user.role!=='driver'&&showBP?{v:'dashboard',i:'📊',l:'BP ダッシュボード',cls:'bp-on',show:true}:null,
-    user.role!=='driver'&&showHP?{v:'hp_dashboard',i:'📊',l:'HP ダッシュボード',cls:'hp-on',show:true}:null,
-    {v:'sep2'},
-    {v:'kanban',i:'🚗',l:'引取り・納車',tag:'共通'},
-    showBP?{v:'bp_kanban',i:'🗂️',l:'BP カンバン',badge:bpHolds||null,cls:'bp-on'}:null,
-    showHP?{v:'hp_kanban',i:'🗂️',l:'HP カンバン',badge:hpHolds||null,cls:'hp-on'}:null,
-    {v:'sep3'},
-    user.role!=='driver'?{v:'joblist',i:'📋',l:'案件一覧'}:null,
-    {v:'customers',i:'👥',l:'顧客・車両'},
-    user.role!=='driver'&&canSeeMoney(user)?{v:'reports',i:'💰',l:'売上レポート'}:null,
-    ['admin','manager'].includes(user.role)?{v:'masters',i:'⚙️',l:'マスタ設定'}:null,
-  ].filter(Boolean);
-
-  const nav=navItems.map(it=>{
-    if(it.v&&it.v.startsWith('sep'))return'<div style="height:1px;background:var(--bdr);margin:8px 4px"></div>';
-    if(it.hide)return'';
-    const isOn=view===it.v;
-    const cls=isOn?(it.cls||'on'):'';
-    return`<button class="nav-btn ${cls}" data-view="${it.v}">
-      <span class="nav-ico">${it.i}</span><span>${it.l}</span>
-      ${it.tag?`<span style="font-size:9px;background:var(--bg3);border:1px solid var(--bdr);border-radius:3px;padding:1px 4px;margin-left:auto;color:var(--txt3)">${it.tag}</span>`:''}
-      ${it.badge?`<span class="nav-badge">${it.badge}</span>`:''}
-    </button>`;
-  }).join('');
-
-  const titles={
-    myview:'👤 マイビュー',
-    dashboard:'📊 BP ダッシュボード',hp_dashboard:'📊 HP ダッシュボード',
-    kanban:'🚗 引取り・納車管理（全事業共通）',
-    bp_kanban:'🗂️ BP カンバンボード',hp_kanban:'🗂️ HP カンバンボード',
-    joblist:'📋 案件一覧',customers:'👥 顧客・車両管理',
-    reports:'💰 売上レポート',masters:'⚙️ マスタ設定'
-  };
-
-  const isKanbanView=['kanban','bp_kanban','hp_kanban'].includes(view);
-  const kanbanToggle=isKanbanView?`
-    <div class="tog-grp">
-      <button class="tog-btn ${STATE.kanbanMode==='scroll'?'on':''}" id="kb-tog-scroll">⬌ ボード</button>
-      <button class="tog-btn ${STATE.kanbanMode==='fit'?'on':''}" id="kb-tog-fit">⊞ 一覧</button>
-    </div>`:'';
-
-  const divColor=user.div==='hp'?'var(--hp)':user.div==='bp'?'var(--bp)':'#374151';
-  const avClass=user.div==='hp'?'hp':user.div==='bp'?'bp':'all';
-
-  const alerts=[
-    overdue?`<span class="bx bx-r">🚨 超過 ${overdue}件</span>`:'',
-    holds?`<span class="bx bx-y">⏸ 保留 ${holds}件</span>`:'',
-    ['admin','manager','front'].includes(user.role)?`<button class="btn btn-n btn-sm" id="qr-btn" style="border-color:#bfdbfe;color:var(--acc2);background:#eff6ff">📷 QR受付</button>`:'',
-    `<span class="bx bx-n" style="font-size:10px">${today.toLocaleDateString('ja-JP')}</span>`,
-  ].filter(Boolean).join('');
-
-  return`<div class="app-shell" style="display:flex;height:100vh;overflow:hidden">
-  <div class="sb-backdrop ${STATE.sidebarOpen?'on':''}" id="sb-backdrop"></div>
-  <aside class="sb ${STATE.sidebarOpen?'mob-open':''}" id="sidebar">
-    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">自動車工程管理 v2.2</div></div>
+  return `<aside class="sb">
+    <div class="sb-logo"><div class="brand">🔧 Ams PRO</div><div class="ver">v2.3 (構造改革版)</div></div>
     <nav class="sb-nav">${nav}</nav>
-    <div class="sb-user">
-      <div class="u-av ${avClass}">${user.name[0]}</div>
-      <div><div class="u-nm">${user.name}</div><div class="u-rl">${ROLE_LABELS[user.role]} / ${user.div==='all'?'全事業':user.div==='hp'?'HP':'BP'}</div></div>
-      <button class="logout" id="logout">⎋</button>
+    <div class="sb-user"><div class="u-av all">${user.name[0]}</div>
+      <div><div class="u-nm">${user.name}</div><div class="u-rl">${user.role}</div></div>
     </div>
   </aside>
   <div class="main">
     <header class="topbar">
-      <button class="sb-toggle" id="sb-toggle" aria-label="メニュー">☰</button>
-      <span class="tb-title">${titles[view]||''}</span>
-      ${kanbanToggle}
-      <div class="tb-right">${alerts}</div>
+      <span class="tb-title">${view.toUpperCase()}</span>
+      <div class="tb-right">
+        <button class="btn btn-n btn-sm" id="btn-print-pd" style="display:${view==='kanban'?'block':'none'}">🖨️ 引取納車リスト印刷</button>
+        <button class="btn btn-p btn-sm" id="btn-new">＋ 受付登録</button>
+      </div>
     </header>
-    <div class="${isKanbanView?'content no-pad':'content'}" id="mc">${viewHTML()}</div>
+    <div class="content ${view.includes('kanban')?'no-pad':''}">${getView()}</div>
   </div>
-</div>
-${modalHTML()}`;
+  ${modalHTML()}
+  <div id="print-area" class="no-print"></div>`;
 }
 
-// ============================================================
-// VIEWS
-// ============================================================
-function viewHTML(){
+function getView(){
   const v=STATE.view;
-  if(v==='myview')return vMyView();
-  if(v==='dashboard')return vDashboard('bp');
-  if(v==='hp_dashboard')return vDashboard('hp');
-  if(v==='kanban')return vKanbanTransfer();
-  if(v==='bp_kanban')return vKanbanDiv('bp');
-  if(v==='hp_kanban')return vKanbanDiv('hp');
-  if(v==='joblist')return vJobList();
-  if(v==='customers')return vCustomers();
-  if(v==='reports')return vReports();
-  if(v==='masters')return vMasters();
-  return'';
+  if(v==='myview') return vMyView();
+  if(v==='dashboard') return vDashboard();
+  if(v==='kanban') return vTransferKanban();
+  if(v==='bp_kanban') return vDivKanban('bp');
+  if(v==='hp_kanban') return vDivKanban('hp');
+  return '';
 }
 
-// ── MY VIEW ──────────────────────────────────────────
+// ── MY VIEW (Unassigned Logic) ─────────────────────────────────
 function vMyView(){
-  const {user,jobs}=STATE;
-  const myActive=[]; const myNext=[];
-  jobs.forEach(j=>j.tasks.forEach(t=>{
-    const relevant=t.assigneeId===user.id || (!t.assigneeId && ['worker','inspector','driver'].includes(user.role) && t.status==='pending');
-    if(!relevant) return;
-    if(['in_progress'].includes(t.status)) myActive.push({j,t});
-    else if(t.status==='pending') myNext.push({j,t});
-  }));
-  const mkCard=(j,t)=>{ const st=STAGES.find(s=>s.id===t.stageId); const dd=diffD(j.promisedDelivery); const dcls=dd<0?'over':dd<=2?'warn':'safe'; const dlbl=dd<0?`${Math.abs(dd)}日超過`:dd===0?'本日':`残${dd}日`; return `<div class="tc" data-otask="${j.id}__${t.id}"><div class="tc-st"><div class="tc-st-nm">${st?.name||'—'}</div><div class="dim">${t.assigneeId?getUserById(t.assigneeId)?.name:'未確定'}</div></div><div class="tc-info"><div class="tc-job">${divTag(j.div)}${j.jobNumber} ${j.customerName}</div><div class="tc-veh">🚗 ${j.vehicleName}</div><div class="dim">作業予定 ${fmtDT(j.workPlannedAt)} / 引取 ${fmtDT(j.pickupPlannedAt)} / 納車 ${fmtDT(j.deliveryPlannedAt)}</div></div><span class="kc-day ${dcls}">${dlbl}</span></div>`; };
-  return `${myActive.length?`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:10px">🔨 作業中 <span class="bx bx-b">${myActive.length}件</span></div><div style="display:flex;flex-direction:column;gap:7px">${myActive.map(x=>mkCard(x.j,x.t)).join('')}</div></div>`:''}${myNext.length?`<div><div style="font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:10px">⏭ 予定作業・未確定案件</div><div style="display:flex;flex-direction:column;gap:7px">${myNext.slice(0,12).map(x=>mkCard(x.j,x.t)).join('')}</div></div>`:'<div class="alert info">ℹ️ 表示対象の作業はありません</div>'}`;
-}
+  const myTasks=STATE.jobs.flatMap(j=>j.tasks.filter(t=>t.assigneeId===STATE.user.id&&t.status!=='completed').map(t=>({j,t})));
+  // 担当者未確定のタスク抽出（予約系以外で、進行中または未着手のもの）
+  const unassigned=STATE.jobs.flatMap(j=>j.tasks.filter(t=>!t.assigneeId && t.status!=='completed' && !['reservation'].includes(STAGES.find(s=>s.id===t.stageId)?.code)).map(t=>({j,t})));
 
-
-// ── DASHBOARD ──────────────────────────────────────────
-function vDashboard(div){
-  const {user}=STATE;const sm=canSeeMoney(user);
-  const period=STATE.dashboardPeriod||'currentMonth';
-  const divColor=div==='hp'?'var(--hp)':'var(--bp)';
-  const jobs=getPeriodJobs(period,div);
-  const tot=jobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
-  const totp=jobs.reduce((s,j)=>s+getProfit(j),0);
-  const over=jobs.filter(j=>diffD(j.promisedDelivery)<0).length;
-  const holds=jobs.filter(j=>j.tasks.some(t=>t.status==='hold')).length;
-  const target=getKpiTarget(period,div);
-  const stcnt={};
-  jobs.forEach(j=>{const t=getCurTask(j);if(t)stcnt[t.stageId]=(stcnt[t.stageId]||0)+1;});
-  const maxv=Math.max(1,...Object.values(stcnt),1);
-  const stages=getStagesForDiv(div);
-  const bnRows=stages.filter(s=>stcnt[s.id]>0).sort((a,b)=>(stcnt[b.id]||0)-(stcnt[a.id]||0))
-    .map(s=>{const n=stcnt[s.id];const c=n>=4?'var(--red)':n>=2?'var(--ylw)':divColor;
-      return`<div class="bn-r"><div class="bn-lbl">${s.name}</div>
-      <div class="bn-tr"><div class="bn-fi" style="width:${n/maxv*100}%;background:${c}"></div></div>
-      <div class="bn-n">${n}</div></div>`;}).join('');
-  const hcnt={};
-  jobs.forEach(j=>j.tasks.filter(t=>t.status==='hold').forEach(t=>{
-    const h=HOLD_REASONS.find(r=>r.id===t.holdReasonId);
-    if(h)hcnt[h.name]=(hcnt[h.name]||0)+1;
-  }));
-  const hmax=Math.max(1,...Object.values(hcnt),1);
-  const hrRows=Object.entries(hcnt).map(([k,v])=>`
-    <div class="bn-r"><div class="bn-lbl" style="width:110px">${k}</div>
-    <div class="bn-tr"><div class="bn-fi" style="width:${v/hmax*100}%;background:var(--ylw)"></div></div>
-    <div class="bn-n">${v}</div></div>`).join('');
-  const pct=(v,t)=>t?Math.round(v/t*100):0;
-  const divKpiClass=div==='hp'?'hp-c':'bl';
-  return`
-  <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-    <button class="fchip ${period==='currentMonth'?'on':''}" data-dash-period="currentMonth">当月</button>
-    <button class="fchip ${period==='nextMonth'?'on':''}" data-dash-period="nextMonth">翌月</button>
-    <button class="fchip ${period==='all'?'on':''}" data-dash-period="all">全て</button>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi ${divKpiClass}"><div class="kpi-lbl">進行中</div><div class="kpi-val">${jobs.filter(j=>j.status!=='completed').length}</div><div class="kpi-sub">件</div></div>
-    ${sm?`<div class="kpi gn"><div class="kpi-lbl">見込み売上</div><div class="kpi-val">${(tot/10000).toFixed(0)}<span style="font-size:16px">万</span></div>
-      ${target.salesTarget?`<div class="kpi-sub">目標比 ${pct(tot,target.salesTarget)}%</div>`:''}</div>
-    <div class="kpi gn"><div class="kpi-lbl">見込み粗利</div><div class="kpi-val">${(totp/10000).toFixed(0)}<span style="font-size:16px">万</span></div>
-      ${target.profitTarget?`<div class="kpi-sub">目標比 ${pct(totp,target.profitTarget)}%</div>`:''}</div>`:''}
-    <div class="kpi rd"><div class="kpi-lbl">保留中</div><div class="kpi-val">${holds}</div><div class="kpi-sub">件</div></div>
-    <div class="kpi yl"><div class="kpi-lbl">納期超過</div><div class="kpi-val">${over}</div><div class="kpi-sub">件</div></div>
-  </div>
-  <div class="g2" style="margin-bottom:18px">
-    <div class="card"><div class="card-t">ボトルネック（現在工程）</div>
-      <div class="bn">${bnRows||'<div style="color:var(--txt3);font-size:12px">進行中案件なし</div>'}</div></div>
-    <div class="card"><div class="card-t">保留理由内訳</div>
-      <div class="bn">${hrRows||'<div style="color:var(--txt3);font-size:12px">保留案件なし</div>'}</div></div>
-  </div>
-  <div class="card"><div class="card-t">納期間近・本日作業</div>
-    <div style="display:flex;flex-direction:column;gap:6px">
-      ${jobs.filter(j=>diffD(j.promisedDelivery)<3).sort((a,b)=>diffD(a.promisedDelivery)-diffD(b.promisedDelivery)).slice(0,5).map(j=>{
-        const dd=diffD(j.promisedDelivery);
-        return`<div class="tc" data-ojob="${j.id}">
-          <div class="tc-st" style="text-align:center;min-width:64px">
-            <div style="font-size:9.5px;font-weight:700;color:${dd<0?'var(--red)':dd===0?'var(--ylw)':divColor}">${dd<0?`${Math.abs(dd)}日超過`:dd===0?'本日':`残${dd}日`}</div>
-          </div>
-          <div class="tc-info">
-            <div class="tc-job">${j.jobNumber} ${j.customerName} ${j.subType?`<span style="font-size:10px;color:var(--txt3)">${subTypeLabel(j.subType)}</span>`:''}</div>
-            <div class="tc-veh">🚗 ${j.vehicleName}</div>
-          </div>
-        </div>`;}).join('')||'<div style="color:var(--txt3);font-size:12px">対象案件なし</div>'}
-    </div>
-  </div>`;
-}
-
-// ── KANBAN TRANSFER（引取り・納車統合） ──────────────────────────────────────────
-function vKanbanTransfer(){
-  const transferItems=STATE.jobs.map(getActiveTransferItem).filter(Boolean);
-  if(STATE.kanbanMode==='fit'){
-    const rows=transferItems
-      .sort((a,b)=>{
-        const up=String(a.job.upstream||'自受け').localeCompare(String(b.job.upstream||'自受け'),'ja');
-        if(up!==0)return up;
-        const tp=(a.type==='pickup'?0:1)-(b.type==='pickup'?0:1);
-        if(tp!==0)return tp;
-        return String(a.plannedAt||'9999').localeCompare(String(b.plannedAt||'9999'));
-      })
-      .map(x=>`<tr data-otask="${x.job.id}__${x.task.id}">
-        <td>${x.type==='pickup'?'引取り':'納車'}</td>
-        <td>${divTag(x.job.div)}</td>
-        <td>${upstreamBadge(x.job.upstream||'自受け')}</td>
-        <td class="td-m">${x.job.jobNumber}</td>
-        <td style="font-weight:700">${x.job.customerName}</td>
-        <td style="color:var(--txt2)">${x.job.vehicleName}</td>
-        <td>${x.job.plateNumber||'—'}</td>
-        <td>${fmtDT(x.plannedAt)||'—'}</td>
-        <td>${x.task.assigneeId?getUserById(x.task.assigneeId)?.name:'未確定'}</td>
-        <td><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[x.task.status]||'#64748b'}18;color:${ST_COLORS[x.task.status]||'#64748b'}">${ST_LABELS[x.task.status]||x.task.status}</span></td>
-      </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--txt3);padding:20px">なし</td></tr>';
-    return `<div class="kb-fit-wrap">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-n btn-sm" id="transfer-print-btn">🖨️ 印刷</button></div>
-      <table class="kb-fit-table"><thead><tr><th>区分</th><th>事業</th><th>元請</th><th>番号</th><th>顧客</th><th>車両</th><th>登録番号</th><th>予定日時</th><th>担当</th><th>状態</th></tr></thead><tbody>${rows}</tbody></table>
+  const mkCard=(item,alert=false)=>`
+    <div class="tc" data-ojob="${item.j.id}">
+      <div class="tc-st"><div style="font-size:11px;font-weight:700;color:var(--acc2)">${STAGES.find(s=>s.id===item.t.stageId)?.name}</div></div>
+      <div class="tc-info">
+        <div class="tc-job">${divTag(item.j.div)} ${item.j.customerName} <span class="up-badge" style="background:var(--txt3)">${item.j.upstream}</span></div>
+        <div class="tc-veh">${item.j.vehicleName}</div>
+      </div>
+      ${alert?`<span class="bx bx-r">担当者未定</span>`:''}
     </div>`;
-  }
-  const groups=[
-    {key:'pickup',label:'🚗 引取り'},
-    {key:'delivery',label:'📦 納車'},
-    {key:'undecided',label:'🗂 未定案件'}
-  ];
-  const card=x=>`<div class="kb-card ${x.job.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${x.job.id}__${x.task.id}"><div class="kc-num">${x.job.div?.toUpperCase()||''} ${x.job.jobNumber} / ${x.job.plateNumber||''}</div><div class="kc-nm">${x.job.customerName}</div><div class="kc-veh">🚗 ${x.job.vehicleName}</div><div class="kc-sub">元請: ${x.job.upstream||'自受け'} / ${x.type==='pickup'?'引取り':'納車'}: ${fmtDT(x.plannedAt)}</div><div class="kc-ft"><span class="kc-ass">${x.task.assigneeId?getUserById(x.task.assigneeId)?.name:'未確定'}</span><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[x.task.status]||'#64748b'}18;color:${ST_COLORS[x.task.status]||'#64748b'}">${ST_LABELS[x.task.status]||x.task.status}</span></div></div>`;
-  const colHtml=groups.map(g=>{
-    let items=[];
-    if(g.key==='pickup') items=transferItems.filter(x=>x.type==='pickup'&&x.plannedAt);
-    if(g.key==='delivery') items=transferItems.filter(x=>x.type==='delivery'&&x.plannedAt);
-    if(g.key==='undecided') items=transferItems.filter(x=>!x.plannedAt);
-    items.sort((a,b)=>String(a.plannedAt||'9999').localeCompare(String(b.plannedAt||'9999')));
-    return `<div class="kb-col" data-transfer-col="${g.key}"><div class="kb-hdr">${g.label}<span class="kb-cnt">${items.length}</span></div><div class="kb-cards">${items.map(card).join('')||'<div style="text-align:center;padding:18px;color:var(--txt3)">なし</div>'}</div></div>`;
-  }).join('');
-  return `<div class="kb-scroll-wrap"><div style="position:absolute;top:10px;right:14px;z-index:5"><button class="btn btn-n btn-sm" id="transfer-print-btn">🖨️ 印刷</button></div>${colHtml}</div>`;
-}
 
-// ── KANBAN DIV（BP / HP） ──────────────────────────────────────────
-function vKanbanDiv(div){
-  const stages=getStagesForDiv(div);
-  const jobs=STATE.jobs.filter(j=>j.div===div);
-  const canAdd=['admin','manager','front'].includes(STATE.user?.role)&&(STATE.user?.div===div||STATE.user?.div==='all'||STATE.user?.role==='admin');
-  if(STATE.kanbanMode==='fit'){
-    const rows=jobs.map(j=>{
-      const t=getCurTask(j); const st=STAGES.find(s=>s.id===t?.stageId);
-      return {j,t,st};
-    }).sort((a,b)=>{
-      const ao=a.st?.order??999, bo=b.st?.order??999;
-      if(ao!==bo)return ao-bo;
-      return String(a.j.workPlannedAt||'9999').localeCompare(String(b.j.workPlannedAt||'9999'));
-    }).map(({j,t,st})=>`<tr data-ojob="${j.id}">
-      <td>${j.jobNumber}</td>
-      <td style="font-weight:700">${j.customerName}</td>
-      <td style="color:var(--txt2)">${j.vehicleName}</td>
-      <td>${upstreamBadge(j.upstream||'自受け')}</td>
-      <td>${div==='hp'&&j.subType?subTypeLabel(j.subType):(st?.name||'—')}</td>
-      <td>${t?.assigneeId?getUserById(t.assigneeId)?.name:'未確定'}</td>
-      <td>${fmtDT(j.workPlannedAt)||'—'}</td>
-      <td>${fmtDT(j.completionPlannedAt)||'—'}</td>
-      <td><span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t?.status||'pending']}18;color:${ST_COLORS[t?.status||'pending']}">${ST_LABELS[t?.status||'pending']}</span></td>
-    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--txt3);padding:20px">なし</td></tr>';
-    return `<div class="kb-fit-wrap">${canAdd?`<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn ${div==='hp'?'btn-hp':'btn-p'} btn-sm" id="new-job-btn">＋ ${div==='hp'?'HP':'BP'} 受付</button></div>`:''}<table class="kb-fit-table"><thead><tr><th>番号</th><th>顧客</th><th>車両</th><th>元請</th><th>工程/種別</th><th>担当</th><th>作業予定</th><th>完了予定</th><th>状態</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-  const currentTaskMap=new Map(jobs.map(j=>[j.id,getCurTask(j)]));
-  const cols=stages.map(s=>{
-    const cards=jobs
-      .map(j=>({j,t:currentTaskMap.get(j.id)}))
-      .filter(x=>x.t&&x.t.stageId===s.id&&x.t.status!=='completed');
-    return `<div class="kb-col" data-stage-col="${s.id}"><div class="kb-hdr">${s.name}<span class="kb-cnt">${cards.length}</span></div><div class="kb-cards">${cards.map(({j,t})=>`<div class="kb-card ${j.priority==='urgent'?'urg':''} ${j.div==='hp'?'hp-card':'bp-card'}" draggable="true" data-otask="${j.id}__${t.id}"><div class="kc-num">${j.jobNumber} / ${j.plateNumber||''}${div==='hp'&&j.subType?` <span style="font-size:8px;color:var(--txt3)">${subTypeLabel(j.subType)}</span>`:''}</div><div class="kc-nm">${j.customerName}</div><div class="kc-veh">🚗 ${j.vehicleName.split('　')[0]}</div><div class="kc-sub">元請: ${j.upstream||'自受け'} / 作業者: ${j.assignedWorkerId?getUserById(j.assignedWorkerId)?.name:'未確定'}</div><div class="kc-sub">作業予定: ${fmtDT(j.workPlannedAt)} / 完了予定: ${fmtDT(j.completionPlannedAt)}</div><div class="kc-ft"><span class="kc-ass">${ST_LABELS[t.status]||t.status}</span><span class="kc-day ${diffD(j.promisedDelivery)<0?'over':diffD(j.promisedDelivery)<=2?'warn':'safe'}">${diffD(j.promisedDelivery)<0?`${Math.abs(diffD(j.promisedDelivery))}日超過`:diffD(j.promisedDelivery)===0?'本日':`残${diffD(j.promisedDelivery)}日`}</span></div></div>`).join('')||'<div style="text-align:center;padding:14px;color:var(--txt3);font-size:11px">なし</div>'}</div></div>`;
-  }).join('');
-  return `<div class="kb-scroll-wrap">${canAdd?`<div style="position:absolute;top:10px;right:14px;z-index:5"><button class="btn ${div==='hp'?'btn-hp':'btn-p'} btn-sm" id="new-job-btn">＋ ${div==='hp'?'HP':'BP'} 受付</button></div>`:''}${cols}</div>`;
-}
-
-// ── JOB LIST ──────────────────────────────────────────
-function vJobList(){
-  const {user}=STATE;
-  const sm=canSeeMoney(user);
-  const canAdd=['admin','manager','front'].includes(user.role);
-  const fl=STATE.listFilter||'all';
-  const lp=STATE.listPeriod||'currentMonth';
-  const from=STATE.listDateFrom||addD(today,-30);
-  const to=STATE.listDateTo||T;
-  const listDiv=STATE.listDiv||'all';
-
-  let base=STATE.jobs;
-  if(listDiv!=='all')base=base.filter(j=>j.div===listDiv);
-  if(lp==='currentMonth')base=base.filter(j=>monthKey(j.settlementDate||j.promisedDelivery||j.entryDate)===currentMonthKey);
-  else if(lp==='prevMonth')base=base.filter(j=>monthKey(j.settlementDate||j.promisedDelivery||j.entryDate)===prevMonthKey);
-  else if(lp==='custom')base=base.filter(j=>inRange(j.entryDate,from,to));
-  if(STATE.listUpstream&&STATE.listUpstream!=='all')base=base.filter(j=>(j.upstream||'自受け')===STATE.listUpstream);
-
-  const counts={
-    all:base.length,
-    today:base.filter(j=>diffD(j.promisedDelivery)===0).length,
-    over:base.filter(j=>diffD(j.promisedDelivery)<0).length,
-    hold:base.filter(j=>j.tasks.some(t=>t.status==='hold')).length,
-    urgent:base.filter(j=>j.priority==='urgent').length,
-    insp:base.filter(j=>j.tasks.some(t=>{const s=STAGES.find(s=>s.id===t.stageId);return (s?.code==='inspection'||s?.code==='shaken_insp')&&['in_progress','ready'].includes(t.status);})).length,
-  };
-  let filtered=[...base];
-  if(fl==='today')filtered=filtered.filter(j=>diffD(j.promisedDelivery)===0);
-  else if(fl==='over')filtered=filtered.filter(j=>diffD(j.promisedDelivery)<0);
-  else if(fl==='hold')filtered=filtered.filter(j=>j.tasks.some(t=>t.status==='hold'));
-  else if(fl==='urgent')filtered=filtered.filter(j=>j.priority==='urgent');
-  else if(fl==='insp')filtered=filtered.filter(j=>j.tasks.some(t=>{const s=STAGES.find(s=>s.id===t.stageId);return (s?.code==='inspection'||s?.code==='shaken_insp')&&['in_progress','ready'].includes(t.status);}));
-
-  const sort=STATE.listSort||'dateDesc';
-  if(sort==='dateDesc')filtered.sort((a,b)=>new Date(b.entryDate)-new Date(a.entryDate));
-  else if(sort==='dateAsc')filtered.sort((a,b)=>new Date(a.entryDate)-new Date(b.entryDate));
-  else if(sort==='profitDesc')filtered.sort((a,b)=>getProfit(b)-getProfit(a));
-
-  const chips=[['all','全件'],['today','📦本日納車'],['over','🚨超過'],['hold','⏸保留'],['urgent','❗緊急'],['insp','🔍検査']]
-    .map(([id,lbl])=>`<button class="fchip ${fl===id?'on':''}" data-fl="${id}">${lbl} (${counts[id]})</button>`).join('');
-
-  const rows=filtered.map(j=>{
-    const t=getCurTask(j);const st=STAGES.find(s=>s.id===t?.stageId);
-    const ass=t?.assigneeId?getUsers().find(u=>u.id===t.assigneeId):null;
-    const dd=diffD(j.promisedDelivery);const p=getProfit(j);
-    return`<tr style="cursor:pointer" data-ojob="${j.id}">
-      <td>${divTag(j.div)}</td>
-      <td class="td-m">${j.jobNumber}</td>
-      <td style="font-weight:700">${j.customerName}</td>
-      <td>${upstreamBadge(j.upstream||'自受け')}</td>
-      <td style="color:var(--txt2);font-size:12px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${j.vehicleName}</td>
-      <td style="font-size:11px">${PRI_LABELS[j.priority]}</td>
-      <td>${j.div==='hp'&&j.subType?`<span style="font-size:11px">${subTypeLabel(j.subType)}</span>`:st?.name||'—'}</td>
-      <td style="font-size:12px;color:var(--txt2)">${ass?.name||'未割当'}</td>
-      <td><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${dd<0?'var(--red)':dd<=2?'var(--ylw)':'var(--txt2)'}">${fmtD(j.promisedDelivery)}</span></td>
-      <td><span style="font-size:10px;padding:2px 6px;border-radius:3px;font-weight:700;background:${ST_COLORS[t?.status||'pending']}18;color:${ST_COLORS[t?.status||'pending']}">${ST_LABELS[t?.status||'pending']}</span></td>
-      ${sm?`<td style="font-family:var(--mono);color:${p>0?'var(--grn)':'var(--red)'};font-weight:700">¥${(p/10000).toFixed(1)}万</td>`:''}
-    </tr>`;}).join('');
-
-  return`<div class="s-hdr" style="align-items:flex-start;gap:10px;flex-wrap:wrap">
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="fbar" style="margin:0">
-        <button class="fchip ${listDiv==='all'?'on':''}" data-listdiv="all">全事業</button>
-        <button class="fchip bp-chip ${listDiv==='bp'?'on':''}" data-listdiv="bp">🔵 BP</button>
-        <button class="fchip hp-chip ${listDiv==='hp'?'on':''}" data-listdiv="hp">🩵 HP</button>
-      </div>
-      <div class="fbar" style="margin:0">
-        <button class="fchip ${lp==='currentMonth'?'on':''}" data-period="currentMonth">当月分</button>
-        <button class="fchip ${lp==='prevMonth'?'on':''}" data-period="prevMonth">前月分</button>
-        <button class="fchip ${lp==='custom'?'on':''}" data-period="custom">自由選択</button>
-        ${lp==='custom'?`<span style="display:inline-flex;align-items:center;gap:6px;margin-left:4px">
-          <input class="fi" type="date" id="list-date-from" value="${from}" style="width:auto;min-width:140px;padding:6px 10px">
-          <span style="font-size:12px;color:var(--txt3)">〜</span>
-          <input class="fi" type="date" id="list-date-to" value="${to}" style="width:auto;min-width:140px;padding:6px 10px">
-        </span>`:''}
-      </div>
-      <div class="fbar" style="margin:0">${chips}</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select class="fi" id="list-upstream" style="width:auto;min-width:160px">
-          <option value="all">元受け：すべて</option>
-          ${getUpstreamOptions().map(v=>`<option value="${v}" ${STATE.listUpstream===v?'selected':''}>元受け：${v}</option>`).join('')}
-        </select>
-        <select class="fi" id="list-sort" style="width:auto;min-width:160px">
-          <option value="dateDesc" ${STATE.listSort==='dateDesc'?'selected':''}>入庫日（新しい順）</option>
-          <option value="dateAsc" ${STATE.listSort==='dateAsc'?'selected':''}>入庫日（古い順）</option>
-          <option value="profitDesc" ${STATE.listSort==='profitDesc'?'selected':''}>粗利（高い順）</option>
-        </select>
-      </div>
+  return `
+    <div style="margin-bottom:24px">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--txt2)">🔨 あなたの担当タスク</h3>
+      ${myTasks.length?myTasks.map(i=>mkCard(i)).join(''):'<div class="alert info">現在担当中のタスクはありません</div>'}
     </div>
-    ${canAdd?`<button class="btn btn-p btn-sm" id="new-job-btn">＋ 受付</button>`:''}
-  </div>
-  <div class="tbl-wrap"><table>
-    <thead><tr><th>区分</th><th>番号</th><th>顧客</th><th>元受け</th><th>車両</th><th>優先</th><th>工程/種別</th><th>担当</th><th>納車日</th><th>状態</th>${sm?'<th>粗利</th>':''}</tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
+    <div>
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--red)">🚨 担当者未確定（全体共有）</h3>
+      <div class="alert warn" style="margin-bottom:8px">タスクの空中戦（見落とし）を防ぐため、担当者がアサインされていない稼働タスクを表示しています。</div>
+      ${unassigned.length?unassigned.map(i=>mkCard(i,true)).join(''):'<div class="alert success">未確定のタスクはありません</div>'}
+    </div>`;
 }
 
-// ── CUSTOMERS ──────────────────────────────────────────
-function vCustomers(){
-  const custs=(STATE.customers||[]).map(c=>({c,vehicles:getVehiclesByCustomer(c.id),jobs:STATE.jobs.filter(j=>j.customerId===c.id)}));
-  return `<div class="s-hdr" style="align-items:flex-start;gap:10px;flex-wrap:wrap"><span style="font-weight:700">顧客一覧 ${custs.length}名</span><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-n btn-sm" id="qr-btn-cust" style="border-color:#bfdbfe;color:var(--acc2);background:#eff6ff">📷 QRで新規受付</button><button class="btn btn-p btn-sm" id="new-job-btn">＋ 受付登録</button></div></div><div class="tbl-wrap"><table><thead><tr><th>顧客名</th><th>車両</th><th>登録番号</th><th>BP</th><th>HP</th><th>合計</th></tr></thead><tbody>${custs.map(({c,vehicles,jobs})=>`<tr><td style="font-weight:700">${c.name}</td><td style="font-size:12px;color:var(--txt2)">${vehicles.map(v=>v.vehicleName).join('<br>')}</td><td>${vehicles.map(v=>v.plateNumber||'').join('<br>')}</td><td>${jobs.filter(j=>j.div==='bp').length}</td><td>${jobs.filter(j=>j.div==='hp').length}</td><td>${jobs.length}</td></tr>`).join('')}</tbody></table></div>`;
-}
-
-// ── REPORTS ──────────────────────────────────────────
-function vReports(){
-  const {user}=STATE;
-  if(!canSeeMoney(user))return'<div class="alert danger">⚠️ 売上レポートを閲覧する権限がありません</div>';
+// ── DASHBOARD (Grid UI) ─────────────────────────────────
+function vDashboard(){
   const bpJobs=STATE.jobs.filter(j=>j.div==='bp');
   const hpJobs=STATE.jobs.filter(j=>j.div==='hp');
-  const sum=(arr,fn)=>arr.reduce((s,j)=>s+(fn(j)||0),0);
-  const bpTot=sum(bpJobs,j=>j.estimateAmount);const bpP=sum(bpJobs,getProfit);
-  const hpTot=sum(hpJobs,j=>j.estimateAmount);const hpP=sum(hpJobs,getProfit);
-  return`
-  <div style="margin-bottom:18px">
-    <div style="font-size:13px;font-weight:700;color:var(--bp);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bp)"></span> BP事業（板金）
+  const bpTot=bpJobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
+  const hpTot=hpJobs.reduce((s,j)=>s+(j.estimateAmount||0),0);
+
+  const mkBar=(val,max,color)=>`<div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:${Math.min(100,val/max*100)}%;background:${color}"></div></div>`;
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-t">🔵 BP事業 (板金) 進捗</div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-lbl">見込売上</div><div class="kpi-val" style="color:var(--bp)">${(bpTot/10000).toFixed(0)}<span style="font-size:14px">万</span></div>
+            <div class="kpi-sub">目標800万 ${mkBar(bpTot,8000000,'var(--bp)')}</div></div>
+          <div class="kpi"><div class="kpi-lbl">進行中案件</div><div class="kpi-val">${bpJobs.length}</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">🩵 HP事業 (整備) 進捗</div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-lbl">見込売上</div><div class="kpi-val" style="color:var(--hp)">${(hpTot/10000).toFixed(0)}<span style="font-size:14px">万</span></div>
+            <div class="kpi-sub">目標400万 ${mkBar(hpTot,4000000,'var(--hp)')}</div></div>
+          <div class="kpi"><div class="kpi-lbl">進行中案件</div><div class="kpi-val">${hpJobs.length}</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── TRANSFER KANBAN (Strict Logic & Status) ─────────────────────────
+function vTransferKanban(){
+  // 予約=引取予定のみ。納車は引取完了以降でのみ出現
+  const getTasks=(code)=>STATE.jobs.map(j=>{
+    const t=j.tasks.find(t=>STAGES.find(s=>s.id===t.stageId)?.code===code);
+    // 納車の場合、引取が完了していないならスキップ（論理的制御）
+    if(code==='delivery'){
+      const pk=j.tasks.find(x=>STAGES.find(s=>s.id===x.stageId)?.code==='pickup');
+      if(pk && pk.status!=='completed') return null;
+    }
+    return t?{j,t}:null;
+  }).filter(Boolean);
+
+  const pickups=getTasks('pickup');
+  const deliveries=getTasks('delivery');
+
+  const mkCard=(item)=>{
+    const d=item.j[item.t.stageId.includes('2')?'promisedPickup':'promisedDelivery']||item.j.promisedDelivery;
+    const isPast=new Date(d)<today && item.t.status!=='completed';
+    const stLbl=PD_ST_LABELS[item.t.status]||'未定';
+    // 当日完了分は残すロジック（completedAtが今日なら表示）
+    if(item.t.status==='completed' && item.t.completedAt!==isoDate(today)) return '';
+
+    return `<div class="kb-card ${item.j.div==='hp'?'hp-card':'bp-card'}" data-ojob="${item.j.id}" draggable="true" ondragstart="drag(event)">
+      <div class="kc-num">
+        <span>${divTag(item.j.div)} ${item.j.customerName}</span>
+        <span class="up-badge" style="background:${DEFAULT_UPSTREAMS.find(u=>u.name===item.j.upstream)?.color||'#000'}">${item.j.upstream}</span>
+      </div>
+      <div class="kc-veh"><span class="kc-veh-plate">${item.j.vehicleName.split('　')[1]||item.j.vehicleName}</span><span style="font-size:9px">${item.j.vehicleName.split('　')[0]}</span></div>
+      <div class="kc-ft">
+        <span class="kc-ass" style="color:${item.t.status==='completed'?'var(--grn)':'var(--txt3)'}">${stLbl}</span>
+        <span class="kc-day ${isPast?'over':'safe'}">${fmtD(d)}</span>
+      </div>
+    </div>`;
+  };
+
+  return `<div class="kb-scroll-wrap">
+    <div class="kb-col" ondragover="allowDrop(event)" ondrop="drop(event,'pickup')">
+      <div class="kb-hdr">🚗 引取予定 (予約含む) <span class="kb-cnt">${pickups.length}</span></div>
+      <div class="kb-cards">${pickups.map(mkCard).join('')}</div>
     </div>
-    <div class="kpi-grid">
-      <div class="kpi bl"><div class="kpi-lbl">売上合計（見込）</div><div class="kpi-val">${(bpTot/10000).toFixed(0)}<span style="font-size:16px">万</span></div></div>
-      <div class="kpi gn"><div class="kpi-lbl">粗利合計（見込）</div><div class="kpi-val">${(bpP/10000).toFixed(0)}<span style="font-size:16px">万</span></div></div>
-      <div class="kpi gn"><div class="kpi-lbl">粗利率</div><div class="kpi-val">${bpTot?Math.round(bpP/bpTot*100):0}%</div></div>
-      <div class="kpi bl"><div class="kpi-lbl">案件数</div><div class="kpi-val">${bpJobs.length}</div></div>
+    <div class="kb-col" ondragover="allowDrop(event)" ondrop="drop(event,'delivery')">
+      <div class="kb-hdr">📦 納車予定 <span class="kb-cnt">${deliveries.length}</span></div>
+      <div class="kb-cards">${deliveries.map(mkCard).join('')}</div>
     </div>
-  </div>
-  <div style="margin-bottom:18px">
-    <div style="font-size:13px;font-weight:700;color:var(--hp);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--hp)"></span> HP事業（一般整備）
-    </div>
-    <div class="kpi-grid">
-      <div class="kpi hp-c"><div class="kpi-lbl">売上合計（見込）</div><div class="kpi-val">${(hpTot/10000).toFixed(0)}<span style="font-size:16px">万</span></div></div>
-      <div class="kpi gn"><div class="kpi-lbl">粗利合計（見込）</div><div class="kpi-val">${(hpP/10000).toFixed(0)}<span style="font-size:16px">万</span></div></div>
-      <div class="kpi gn"><div class="kpi-lbl">粗利率</div><div class="kpi-val">${hpTot?Math.round(hpP/hpTot*100):0}%</div></div>
-      <div class="kpi hp-c"><div class="kpi-lbl">案件数</div><div class="kpi-val">${hpJobs.length}</div></div>
-    </div>
-  </div>
-  <div class="card"><div class="card-t">全案件明細</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>区分</th><th>番号</th><th>顧客</th><th>売上見込</th><th>部品原価</th><th>工賃</th><th>粗利</th><th>粗利率</th></tr></thead>
-      <tbody>${STATE.jobs.map(j=>{const p=getProfit(j);return`<tr>
-        <td>${divTag(j.div)}</td>
-        <td class="td-m">${j.jobNumber}</td><td style="font-weight:700">${j.customerName}</td>
-        <td style="font-family:var(--mono)">¥${j.estimateAmount.toLocaleString()}</td>
-        <td style="font-family:var(--mono);color:var(--red)">¥${j.estimatePartsCost.toLocaleString()}</td>
-        <td style="font-family:var(--mono);color:var(--red)">¥${j.estimateLaborCost.toLocaleString()}</td>
-        <td style="font-family:var(--mono);font-weight:700;color:${p>0?'var(--grn)':'var(--red)'}">¥${p.toLocaleString()}</td>
-        <td style="font-weight:700;color:${p>0?'var(--grn)':'var(--red)'}">${j.estimateAmount?Math.round(p/j.estimateAmount*100):0}%</td>
-      </tr>`;}).join('')}
-      </tbody>
-    </table></div>
   </div>`;
 }
 
-// ── MASTERS ──────────────────────────────────────────
-function vMasters(){
-  const {user}=STATE;
-  if(!['admin','manager'].includes(user.role))return'<div class="alert danger">⚠️ マスタ設定を編集する権限がありません</div>';
-  const tab=STATE.masterTab||'stages';
-  const mDiv=STATE.masterDiv||'bp';
+// ── DIV KANBAN (Drag&Drop, Register Plate) ─────────────────────────
+function vDivKanban(div){
+  const stages=div==='bp'?BP_STAGES:HP_STAGES;
+  const jobs=STATE.jobs.filter(j=>j.div===div);
 
-  // divタブ
-  const divSwitch=(user.role==='admin'||user.div==='all')?`
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button class="fchip bp-chip ${mDiv==='bp'?'on':''}" data-mdiv="bp">🔵 BP事業</button>
-      <button class="fchip hp-chip ${mDiv==='hp'?'on':''}" data-mdiv="hp">🩵 HP事業</button>
-      <button class="fchip ${mDiv==='common'?'on':''}" data-mdiv="common">共通</button>
-    </div>`:
-    `<div style="margin-bottom:12px;font-size:12px;font-weight:700;color:${mDiv==='hp'?'var(--hp)':'var(--bp)'}">${mDiv==='hp'?'🩵 HP事業':'🔵 BP事業'} のマスタを表示中</div>`;
-
-  const masterTabs=mDiv==='common'
-    ?[['upstreams','元受け'],['users','ユーザー']]
-    :mDiv==='hp'
-    ?[['stages','工程マスタ'],['wip','WIP上限'],['hold','保留理由'],['ng','NG理由'],['kpi','目標KPI']]
-    :[['stages','工程マスタ'],['wip','WIP上限'],['hold','保留理由'],['ng','NG理由'],['kpi','目標KPI']];
-
-  const th=masterTabs.map(([id,l])=>`<button class="tab ${tab===id?'on':''}" data-mtab="${id}">${l}</button>`).join('');
-  let body='';
-
-  if(tab==='stages'){
-    const stages=getStagesForDiv(mDiv);
-    body=`<div class="tbl-wrap"><table>
-      <thead><tr><th>ID</th><th>工程名</th><th>グループ</th><th>標準時間</th></tr></thead>
-      <tbody>${stages.map(s=>`<tr>
-        <td class="td-m">${s.id}</td>
-        <td style="font-weight:600">${s.name}</td>
-        <td><span class="bx bx-n">${s.group}</span></td>
-        <td>${s.hrs}h</td></tr>`).join('')}
-      </tbody></table></div>
-      <div class="alert info" style="margin-top:12px">ℹ️ 工程マスタの追加・編集は次期バージョンで対応予定です。</div>`;
-  } else if(tab==='wip'){
-    const wipLimits=getWipLimits(mDiv);
-    const stages=getStagesForDiv(mDiv);
-    const wipStages=stages.filter(s=>s.group==='作業'||s.group==='品質');
-    body=`<div class="alert info">ℹ️ 各工程の同時進行可能件数（WIP上限）を設定します。上限を超えると赤色で警告されます。</div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>工程名</th><th>現在の上限</th><th>新しい上限</th></tr></thead>
-        <tbody>${wipStages.map(s=>`<tr>
-          <td style="font-weight:600">${s.name}</td>
-          <td style="font-family:var(--mono)">${wipLimits[s.id]??'—'}</td>
-          <td><input type="number" class="fi" data-wip-input="${s.id}" value="${wipLimits[s.id]??3}" min="1" style="max-width:120px"></td>
-        </tr>`).join('')}
-        </tbody></table></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-        <button class="btn btn-n" id="wip-reset-btn">初期値に戻す</button>
-        <button class="btn btn-p" id="wip-save-btn">WIP上限を保存</button>
+  const cols=stages.map(s=>{
+    // 未着手(pending), 作業中(in_progress), 当日完了を含める
+    const cards=jobs.filter(j=>j.tasks.some(t=>
+      t.stageId===s.id && (['pending','in_progress','hold'].includes(t.status) || (t.status==='completed' && t.completedAt===isoDate(today)))
+    ));
+    return `<div class="kb-col" ondragover="allowDrop(event)" ondrop="drop(event,'${s.id}')">
+      <div class="kb-hdr">${s.name} <span class="kb-cnt">${cards.length}</span></div>
+      <div class="kb-cards">
+        ${cards.map(j=>{
+          const t=j.tasks.find(x=>x.stageId===s.id);
+          const isDone=t.status==='completed';
+          return `<div class="kb-card ${div==='hp'?'hp-card':'bp-card'}" data-ojob="${j.id}" draggable="true" ondragstart="drag(event)" data-tid="${t.id}">
+            <div class="kc-num">
+              <span>${j.jobNumber}</span>
+              <span class="up-badge" style="background:${DEFAULT_UPSTREAMS.find(u=>u.name===j.upstream)?.color||'#000'}">${j.upstream}</span>
+            </div>
+            <div class="kc-veh"><span class="kc-veh-plate">${j.vehicleName.split('　')[1]||j.vehicleName}</span></div>
+            <div class="kc-ft">
+              <span class="kc-ass" style="color:${isDone?'var(--grn)':'inherit'}">${isDone?'当日完了':ST_LABELS[t.status]}</span>
+              <span class="kc-day safe">${USERS.find(u=>u.id===t.assigneeId)?.name||'未定'}</span>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
-  } else if(tab==='hold'){
-    body=`<div class="tbl-wrap"><table>
-      <thead><tr><th>コード</th><th>理由名</th></tr></thead>
-      <tbody>${HOLD_REASONS.map(h=>`<tr><td class="td-m">${h.code}</td><td style="font-weight:600">${h.name}</td></tr>`).join('')}
-      </tbody></table></div>`;
-  } else if(tab==='ng'){
-    const ngR=getNgReasons(mDiv);
-    body=`<div class="tbl-wrap"><table>
-      <thead><tr><th>ID</th><th>NG理由</th></tr></thead>
-      <tbody>${ngR.map(r=>`<tr><td class="td-m">${r.id}</td><td style="font-weight:600">${r.name}</td></tr>`).join('')}
-      </tbody></table></div>`;
-  } else if(tab==='kpi'){
-    const targets=mDiv==='hp'?STATE.hpKpiTargets:STATE.bpKpiTargets;
-    body=`<div class="alert info">ℹ️ 月別の売上・粗利・件数目標（千円単位）を設定します。</div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>月</th><th>売上目標（千円）</th><th>粗利目標（千円）</th><th>件数目標</th></tr></thead>
-        <tbody>${(targets||[]).map((r,idx)=>`<tr>
-          <td class="td-m">${r.month}</td>
-          <td><input type="number" class="fi" data-kpi-sales="${idx}" value="${r.salesTarget}" style="max-width:180px"></td>
-          <td><input type="number" class="fi" data-kpi-profit="${idx}" value="${r.profitTarget}" style="max-width:180px"></td>
-          <td><input type="number" class="fi" data-kpi-count="${idx}" value="${r.countTarget}" style="max-width:120px"></td>
-        </tr>`).join('')}
-        </tbody></table></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-        <button class="btn btn-n" id="kpi-reset-btn">初期値に戻す</button>
-        <button class="btn btn-p" id="kpi-save-btn">KPI目標を保存</button>
-      </div>
-    </div>`;
-  } else if(tab==='upstreams'){
-    body=`<div class="alert info">ℹ️ 元受け名と表示色はBP・HP両事業で共通です。</div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>No.</th><th>元受け名</th><th>色</th><th>プレビュー</th></tr></thead>
-        <tbody>${(STATE.upstreams||[]).map((up,idx)=>`<tr>
-          <td class="td-m">${String(idx+1).padStart(2,'0')}</td>
-          <td><input class="fi" data-upstream-input="${idx}" value="${typeof up==='string'?up:up.name}" style="max-width:240px"></td>
-          <td><input type="color" class="fi" data-upstream-color="${idx}" value="${(typeof up==='string'?'#1d4ed8':up.color)||'#1d4ed8'}" style="width:72px;padding:4px"></td>
-          <td><span class="up-badge" style="background:${(typeof up==='string'?'#1d4ed8':up.color)||'#1d4ed8'}">${typeof up==='string'?up:up.name}</span></td>
-        </tr>`).join('')}
-        <tr><td class="td-m">+</td>
-          <td><input class="fi" id="upstream-new" placeholder="新しい元受け" style="max-width:240px"></td>
-          <td><input type="color" class="fi" id="upstream-new-color" value="#1d4ed8" style="width:72px;padding:4px"></td>
-          <td></td></tr>
-        </tbody></table></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-        <button class="btn btn-n" id="upstream-reset-btn">初期値に戻す</button>
-        <button class="btn btn-p" id="upstream-save-btn">元受けマスタを保存</button>
-      </div>
-    </div>`;
-  } else {
-    body=`<div class="alert info">ℹ️ ロール変更は管理者と工場長のみ可能です。</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>氏名</th><th>メール</th><th>区分</th><th>ロール</th><th>状態</th></tr></thead>
-      <tbody>${getUsers().map((u,idx)=>`<tr>
-        <td style="font-weight:600">${u.name}</td>
-        <td style="font-family:var(--mono);font-size:12px">${u.email}</td>
-        <td>${divTag(u.div==='all'?'bp':u.div)} ${u.div==='all'?'全事業':u.div==='hp'?'HP':'BP'}</td>
-        <td>
-          <select class="fi" data-user-role="${idx}" style="max-width:150px">
-            ${['admin','manager','front','worker','inspector','parts','process','driver','readonly'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_LABELS[r]}</option>`).join('')}
-          </select>
-        </td>
-        <td style="color:var(--grn)">✓ 有効</td></tr>`).join('')}
-      </tbody></table></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-        <button class="btn btn-p" id="user-save-btn">ユーザー権限を保存</button>
-      </div>`;
+  }).join('');
+
+  return `<div class="kb-scroll-wrap">${cols}</div>`;
+}
+
+// ── DRAG & DROP LOGIC ─────────────────────────────────
+function allowDrop(ev){ ev.preventDefault(); ev.currentTarget.classList.add('drag-over');}
+function drag(ev){ ev.dataTransfer.setData("jid", ev.currentTarget.dataset.ojob); }
+function drop(ev, targetStageId){
+  ev.preventDefault();
+  document.querySelectorAll('.kb-col').forEach(c=>c.classList.remove('drag-over'));
+  const jid=ev.dataTransfer.getData("jid");
+  const job=STATE.jobs.find(j=>j.id===jid);
+  if(!job) return;
+
+  // 引取/納車の特殊マッピング
+  let sId = targetStageId;
+  if(targetStageId==='pickup' || targetStageId==='delivery'){
+    const stageDef=STAGES.find(s=>s.code===targetStageId && s.div===job.div);
+    if(stageDef) sId=stageDef.id;
   }
 
-  return`${divSwitch}<div style="display:flex;gap:0;border-bottom:1px solid var(--bdr);margin-bottom:15px">${th}</div>${body}`;
+  // タスクの状態を更新（対象ステージを進行中/未着手に、それ以前を完了に）
+  const stageIdx = STAGES.findIndex(s=>s.id===sId);
+  job.tasks.forEach(t=>{
+    const tIdx = STAGES.findIndex(s=>s.id===t.stageId);
+    if(tIdx < stageIdx) { t.status='completed'; t.completedAt=isoDate(today); }
+    else if(tIdx === stageIdx) { t.status='in_progress'; t.completedAt=null; }
+    else { t.status='pending'; t.completedAt=null; }
+  });
+  setState({});
+  showToast('工程を移動しました');
 }
 
-// ============================================================
-// MODALS
-// ============================================================
+// ── MODALS (Redesigned Flat UI) ─────────────────────────────────
 function modalHTML(){
-  const {modal}=STATE;
-  if(!modal)return'';
-  if(modal==='task')return mTask();
-  if(modal==='jobDetail')return mJobDetail();
-  if(modal==='newJob')return mNewJob();
-  if(modal==='conflict')return mConflict();
-  if(modal==='qr')return mQR();
-  return'';
+  if(STATE.modal==='newJob') return mNewJob();
+  if(STATE.modal==='jobDetail') return mJobDetail();
+  return '';
 }
 
-// ── QR ──────────────────────────────────────────
-function mQR(){
-  const scanned=STATE.qrScanned;
-  return`<div class="mbk" id="mbk">
-  <div class="mo" style="max-width:500px">
-    <div class="mo-hdr">
-      <div><div class="mo-ttl">📷 車検証QRコード読取</div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:2px">車検証のQRコードをスキャンして車両情報を自動入力</div>
-      </div><button class="mo-x" id="mc-x">×</button>
-    </div>
+function mNewJob(){
+  const isHp=STATE.newDiv==='hp';
+  return `<div class="mbk" id="mbk"><div class="mo" style="max-width:800px">
+    <div class="mo-hdr"><div class="mo-ttl">＋ 受付登録 (${isHp?'🩵 HP事業':'🔵 BP事業'})</div><button class="mo-x" onclick="setState({modal:null})">×</button></div>
     <div class="mo-body">
-      ${!scanned?`
-      <div class="qr-box">
-        <div class="qr-frame">
-          <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
-          <div class="qr-corner bl"></div><div class="qr-corner br"></div>
-          <div class="qr-scan-line"></div><div class="qr-icon">📷</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label class="flbl">顧客選択 (マスタ連携)</label>
+          <select class="fi" id="nj-cust" onchange="updateVehicles(this.value)">
+            <option value="">-- 新規または選択 --</option>
+            ${CUSTOMERS_DB.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+          </select>
         </div>
-        <div class="qr-lbl">カメラでQRコードを読み取り中…</div>
-      </div>
-      <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;font-weight:600">▼ デモ：読取サンプルを選択</div>
-      <div class="scan-demo-btns">
-        ${QR_DEMO_VEHICLES.map((v,i)=>`<button class="scan-demo-btn" data-qr-idx="${i}">
-          <div class="scan-demo-lbl">📋 ${v.plate}</div>
-          <div class="scan-demo-sub">${v.maker} ${v.model} (${v.year}) — ${v.owner}</div>
-        </button>`).join('')}
-      </div>`:`
-      <div class="qr-result">
-        <div class="qr-result-t">✅ QRコード読取成功</div>
-        <div class="qr-field">
-          <span class="qr-key">ナンバー</span><span class="qr-val">${scanned.plate}</span>
-          <span class="qr-key">メーカー</span><span class="qr-val">${scanned.maker}</span>
-          <span class="qr-key">車種</span><span class="qr-val">${scanned.model}</span>
-          <span class="qr-key">年式</span><span class="qr-val">${scanned.year}年</span>
-          <span class="qr-key">車台番号</span><span class="qr-val" style="font-family:var(--mono);font-size:11.5px">${scanned.vin}</span>
-          <span class="qr-key">所有者</span><span class="qr-val">${scanned.owner}</span>
-          <span class="qr-key">色</span><span class="qr-val">${scanned.color}</span>
+        <div class="fg">
+          <label class="flbl">車両選択</label>
+          <select class="fi" id="nj-veh"><option value="">-- 顧客を選択してください --</option></select>
+        </div>
+        <div class="fg"><label class="flbl">元請け</label><select class="fi" id="nj-up">${DEFAULT_UPSTREAMS.map(u=>`<option value="${u.name}">${u.name}</option>`).join('')}</select></div>
+        <div class="fg"><label class="flbl">担当者</label><select class="fi" id="nj-ass"><option value="">未確定 (全体共有)</option>${USERS.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+        
+        <div class="fg">
+          <label class="flbl">引取予定日時</label>
+          <input type="datetime-local" class="fi" id="nj-pickup">
+        </div>
+        <div class="fg">
+          <label class="flbl">納車予定日時</label>
+          <input type="datetime-local" class="fi" id="nj-deliv">
+          ${isHp?`<div style="display:flex;gap:5px;margin-top:5px">
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${isoDate(today)}T17:00'">当日</button>
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${addD(today,1)}T17:00'">明日</button>
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${addD(today,2)}T17:00'">明後日</button>
+          </div>`:`<div style="display:flex;gap:5px;margin-top:5px">
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${addD(today,2)}T17:00'">2日後</button>
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${addD(today,7)}T17:00'">1週間後</button>
+            <button class="btn btn-n btn-sm" onclick="document.getElementById('nj-deliv').value='${addD(today,14)}T17:00'">2週間後</button>
+          </div>`}
         </div>
       </div>
-      <div class="alert success">✅ 上記の情報で受付フォームに自動入力されます</div>`}
+    </div>
+    <div class="mo-ft"><button class="btn btn-p" onclick="saveNewJob()">登録する</button></div>
+  </div></div>
+  <script>
+    function updateVehicles(cId){
+      const sel=document.getElementById('nj-veh');
+      const vs=VEHICLES_DB.filter(v=>v.customerId===cId);
+      sel.innerHTML=vs.length?vs.map(v=>\`<option value="\${v.plate}">\${v.maker} \${v.model} \${v.plate}</option>\`).join(''):'<option value="">車両データなし</option>';
+    }
+  <\/script>`;
+}
+
+function mJobDetail(){
+  const j=STATE.selectedJob;
+  return `<div class="mbk" id="mbk"><div class="mo">
+    <div class="mo-hdr">
+      <div><div class="mo-ttl">${divTag(j.div)} ${j.jobNumber} ${j.customerName}</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">${j.vehicleName}</div></div>
+      <button class="mo-x" onclick="setState({modal:null})">×</button>
+    </div>
+    <div class="mo-body" style="background:var(--bg3)">
+      <div class="card" style="margin-bottom:15px;height:auto">
+        <div class="card-t">基本情報・スケジュール（直接編集）</div>
+        <div class="form-grid">
+          <div class="fg"><label class="flbl">元請け</label><select class="fi" id="jd-up">${DEFAULT_UPSTREAMS.map(u=>`<option value="${u.name}" ${u.name===j.upstream?'selected':''}>${u.name}</option>`).join('')}</select></div>
+          <div class="fg"><label class="flbl">引取予定</label><input type="datetime-local" class="fi" value="${j.promisedPickup||''}"></div>
+          <div class="fg"><label class="flbl">納車予定</label><input type="datetime-local" class="fi" value="${j.promisedDelivery||''}"></div>
+        </div>
+      </div>
+      <div class="card" style="height:auto">
+        <div class="card-t">財務情報（直接編集）</div>
+        <div class="form-grid">
+          <div class="fg"><label class="flbl">見積金額</label><input type="number" class="fi" value="${j.estimateAmount||0}"></div>
+          <div class="fg"><label class="flbl">部品原価</label><input type="number" class="fi" value="0"></div>
+        </div>
+      </div>
     </div>
     <div class="mo-ft">
-      <button class="btn btn-n" id="mc-x2">閉じる</button>
-      ${scanned?`<button class="btn btn-p" id="qr-to-job">この車両で受付 →</button>`:''}
-      ${scanned?`<button class="btn btn-n" id="qr-rescan" style="margin-right:auto;order:-1">↺ 再スキャン</button>`:''}
+      <button class="btn btn-n" onclick="setState({modal:null})">閉じる</button>
+      <button class="btn btn-p" onclick="setState({modal:null});showToast('詳細を更新しました')">保存する</button>
     </div>
   </div></div>`;
 }
 
-// ── TASK MODAL ──────────────────────────────────────────
-function mTask(){
-  const {selectedJob:j,selectedTask:t}=STATE;
-  if(!j||!t)return'';
-  const stage=STAGES.find(s=>s.id===t.stageId);
-  const defaultStatus=STATE.dragMoveContext?'in_progress':t.status;
-  const assOpts=['<option value="">未確定</option>',...getUsersForDiv(j.div).filter(u=>u.role!=='readonly').map(u=>`<option value="${u.id}" ${(t.assigneeId||j.assignedWorkerId)===u.id?'selected':''}>${u.name}（${ROLE_LABELS[u.role]}）</option>`)].join('');
-  return `<div class="mbk" id="mbk"><div class="mo"><div class="mo-hdr"><div><div class="mo-ttl">${divTag(j.div)} ステータス更新：${stage?.name||'—'}</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">${j.jobNumber} ${j.customerName} / ${j.vehicleName}</div></div><button class="mo-x" id="mc-x">×</button></div><div class="mo-body"><div id="mo-err"></div><div class="fg"><div class="flbl">ステータス</div><div class="st-grp">${['pending','in_progress','completed'].map(s=>`<button class="st-btn ${s} ${defaultStatus===s?'sel':''}" data-sst="${s}">${ST_LABELS[s]}</button>`).join('')}</div></div><div class="fg"><label class="flbl">担当者</label><select class="fi" id="ass-sel">${assOpts}</select></div><div class="fg"><label class="flbl">完了予定日</label><input type="date" class="fi" id="eta-in" value="${t.finishEta||''}"></div><div class="fg"><label class="flbl">作業メモ</label><textarea class="fi" id="t-note">${t.note||''}</textarea></div></div><div class="mo-ft"><button class="btn btn-n" id="mc-x2">キャンセル</button><button class="btn btn-p" id="t-save">保存する</button></div></div></div>`;
-}
-
-// ── JOB DETAIL ──────────────────────────────────────────
-function mJobDetail(){
-  const {selectedJob:j,user}=STATE;if(!j)return'';
-  const sm=canSeeMoney(user);const tab=STATE.jobDetailTab||'flow';
-  const canEditThis=canEditFinance(user,j);
-  const canEditJobThis=canEditJob(user,j);
-  const flowRows=j.tasks.map((t,i)=>{
-    const st=STAGES.find(s=>s.id===t.stageId);
-    const ass=t.assigneeId?getUserById(t.assigneeId):null;
-    const hr=t.holdReasonId?HOLD_REASONS.find(h=>h.id===t.holdReasonId):null;
-    const isDone=t.status==='completed';const isCur=['in_progress','hold'].includes(t.status);
-    const editable=canEdit(user,t,j);
-    return`<div class="sf-row ${isCur?'cur':''} ${isDone?'done':''} ${t.status==='hold'?'hld':''} ${editable?'':'no-edit'}"
-      ${editable?`data-otask="${j.id}__${t.id}"`:''}">
-      <div class="sf-num ${isDone?'d':isCur?'c':t.status==='hold'?'h':'p'}">${isDone?'✓':i+1}</div>
-      <div class="sf-nm">${st?.name||'—'}${hr?`<span style="margin-left:6px;font-size:10px;color:var(--ylw)">⚠️ ${hr.name}</span>`:''}
-        ${t.reworkCount>0?`<span style="margin-left:6px;font-size:10px;color:var(--red)">差戻${t.reworkCount}回</span>`:''}</div>
-      <div class="sf-sub">${ass?ass.name.split(' ')[1]||ass.name:'—'}</div>
-      <div class="sf-sub">${fmtD(t.finishEta)}</div>
-      <div><span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:3px;background:${ST_COLORS[t.status]}18;color:${ST_COLORS[t.status]}">${ST_LABELS[t.status]}</span></div>
-      ${editable?'<span style="font-size:11px;color:var(--txt3)">✏️</span>':''}
-    </div>`;}).join('');
-
-  const p=getProfit(j);
-  return`<div class="mbk" id="mbk">
-  <div class="mo">
-    <div class="mo-hdr">
-      <div>
-        <div class="mo-ttl">${divTag(j.div)} ${j.jobNumber} — ${j.customerName}${j.subType?` <span style="font-size:12px;color:var(--txt3)">${subTypeLabel(j.subType)}</span>`:''}</div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:2px">🚗 ${j.vehicleName}</div>
-      </div>
-      <button class="mo-x" id="mc-x">×</button>
-    </div>
-    <div class="tabs">
-      <button class="tab ${tab==='flow'?'on':''}" data-jdtab="flow">工程</button>
-      <button class="tab ${tab==='info'?'on':''}" data-jdtab="info">詳細情報</button>
-      ${sm?`<button class="tab ${tab==='fin'?'on':''}" data-jdtab="fin">収益</button>`:''}
-    </div>
-    <div class="mo-body">
-      <div id="mo-err"></div>
-      ${tab==='flow'?`<div class="sf">${flowRows}</div>`:''}
-      ${tab==='info'?`
-        <div class="pr-row"><span class="pr-lbl">区分</span><span>${divTag(j.div)} ${j.div==='hp'?'HP事業（一般整備）':'BP事業（板金）'}</span></div>
-        ${j.subType?`<div class="pr-row"><span class="pr-lbl">種別</span><span>${subTypeLabel(j.subType)}</span></div>`:''}
-        <div class="pr-row"><span class="pr-lbl">案件番号</span><span class="pr-val">${j.jobNumber}</span></div>
-        <div class="pr-row"><span class="pr-lbl">顧客</span><span style="font-weight:600">${j.customerName}</span></div>
-        <div class="pr-row"><span class="pr-lbl">元請</span><span>${upstreamBadge(j.upstream||'自受け')}</span></div><div class="pr-row"><span class="pr-lbl">登録番号</span><span>${j.plateNumber||'—'}</span></div><div class="pr-row"><span class="pr-lbl">引取予定</span><span>${fmtDT(j.pickupPlannedAt)}</span></div><div class="pr-row"><span class="pr-lbl">受付予定</span><span>${fmtDT(j.receptionPlannedAt)}</span></div><div class="pr-row"><span class="pr-lbl">作業予定</span><span>${fmtDT(j.workPlannedAt)}</span></div><div class="pr-row"><span class="pr-lbl">完了予定</span><span>${fmtDT(j.completionPlannedAt)}</span></div><div class="pr-row"><span class="pr-lbl">納車予定</span><span>${fmtDT(j.deliveryPlannedAt)}</span></div>
-        <div class="pr-row"><span class="pr-lbl">車両</span><span style="font-weight:600">${j.vehicleName}</span></div>
-        <div class="pr-row"><span class="pr-lbl">優先度</span><span>${PRI_LABELS[j.priority]}</span></div>
-        <div class="pr-row"><span class="pr-lbl">入庫日</span><span>${fmtD(j.entryDate)}</span></div>
-        <div class="pr-row"><span class="pr-lbl">約束納車日</span><span>${fmtD(j.promisedDelivery)}</span></div>
-        <div class="pr-row"><span class="pr-lbl">清算予定日</span><span>${fmtD(j.settlementDate)}</span></div>
-        <div class="pr-row"><span class="pr-lbl">備考</span><span>${j.note||'—'}</span></div>
-        ${canEditJobThis?`
-        <hr style="border:none;border-top:1px solid var(--bdr);margin:12px 0">
-        <div class="fg"><label class="flbl">顧客名</label><input class="fi" id="ji-customer" value="${j.customerName||''}"></div>
-        <div class="fg"><label class="flbl">元受け</label><select class="fi" id="ji-upstream">${getUpstreamOptions().map(v=>`<option value="${v}" ${v===(j.upstream||'自受け')?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="fg"><label class="flbl">車両</label><input class="fi" id="ji-vehicle" value="${j.vehicleName||''}"></div>
-        <div class="fg"><label class="flbl">優先度</label><select class="fi" id="ji-priority">${Object.entries(PRI_LABELS).map(([k,v])=>`<option value="${k}" ${j.priority===k?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="fg"><label class="flbl">約束納車日</label><input type="date" class="fi" id="ji-promised" value="${j.promisedDelivery||''}"></div><div class="fg"><label class="flbl">引取予定日時</label><input type="datetime-local" class="fi" id="ji-pickup" value="${j.pickupPlannedAt||''}"></div><div class="fg"><label class="flbl">受付予定日時</label><input type="datetime-local" class="fi" id="ji-reception" value="${j.receptionPlannedAt||''}"></div><div class="fg"><label class="flbl">作業予定日時</label><input type="datetime-local" class="fi" id="ji-work" value="${j.workPlannedAt||''}"></div><div class="fg"><label class="flbl">完了予定日時</label><input type="datetime-local" class="fi" id="ji-completion" value="${j.completionPlannedAt||''}"></div><div class="fg"><label class="flbl">納車予定日時</label><input type="datetime-local" class="fi" id="ji-delivery" value="${j.deliveryPlannedAt||''}"></div>
-        <div class="fg"><label class="flbl">社内締切</label><input type="date" class="fi" id="ji-deadline" value="${j.internalDeadline||''}"></div>
-        <div class="fg"><label class="flbl">担当フロント</label><select class="fi" id="ji-front">${getUsersForDiv(j.div).filter(u=>['admin','manager','front'].includes(u.role)).map(u=>`<option value="${u.id}" ${j.frontOwnerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
-        <div class="fg"><label class="flbl">作業者</label><select class="fi" id="ji-worker"><option value="">未確定</option>${getUsersForDiv(j.div).filter(u=>['worker','inspector','driver'].includes(u.role)).map(u=>`<option value="${u.id}" ${j.assignedWorkerId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div><div class="fg"><label class="flbl">備考</label><textarea class="fi" id="ji-note">${j.note||''}</textarea></div>
-        <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" id="ji-save">案件情報を保存</button></div>`:''}
-      `:''}
-      ${tab==='fin'&&sm?`
-        <div class="pr-row"><span class="pr-lbl">見込み売上</span><span class="pr-val">${j.estimateAmount?`¥${j.estimateAmount.toLocaleString()}`:'—'}</span></div>
-        <div class="pr-row"><span class="pr-lbl">見込み部品原価</span><span class="pr-val neg">${j.estimatePartsCost?`¥${j.estimatePartsCost.toLocaleString()}`:'—'}</span></div>
-        <div class="pr-row"><span class="pr-lbl">見込み工賃</span><span class="pr-val neg">${j.estimateLaborCost?`¥${j.estimateLaborCost.toLocaleString()}`:'—'}</span></div>
-        <div class="pr-row"><span class="pr-lbl">── 見込み粗利</span><span class="pr-val ${p>=0?'pos':'neg'}">¥${Math.abs(p).toLocaleString()}</span></div>
-        <div class="pr-row"><span class="pr-lbl">粗利率</span><span class="pr-val ${p>=0?'pos':'neg'}">${j.estimateAmount?Math.round(p/j.estimateAmount*100):0}%</span></div>
-        ${canEditThis?`
-        <hr style="border:none;border-top:1px solid var(--bdr);margin:12px 0">
-        <div class="fg"><label class="flbl">見込み売上</label><input type="number" class="fi" id="jf-sales" value="${j.estimateAmount||0}"></div>
-        <div class="fg"><label class="flbl">見込み部品原価</label><input type="number" class="fi" id="jf-parts" value="${j.estimatePartsCost||0}"></div>
-        <div class="fg"><label class="flbl">見込み工賃</label><input type="number" class="fi" id="jf-labor" value="${j.estimateLaborCost||0}"></div>
-        <div class="fg"><label class="flbl">清算予定日</label><input type="date" class="fi" id="jf-settlement" value="${j.settlementDate||j.promisedDelivery||''}"></div>
-        <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" id="jf-save">収益情報を保存</button></div>`:''}
-      `:''}
-    </div>
-    <div class="mo-ft">
-      <button class="btn btn-n" id="mc-x2">閉じる</button>
-    </div>
-  </div>
-</div>`;
-}
-
-// ── NEW JOB ──────────────────────────────────────────
-function mNewJob(){
-  const {user,qrScanned:qr}=STATE;
-  const selDiv=STATE.newJobDiv||(user.div==='all'||user.role==='admin'?null:user.div);
-  if(!selDiv){
-    return`<div class="mbk" id="mbk"><div class="mo" style="max-width:480px"><div class="mo-hdr"><span class="mo-ttl">＋ 受付登録</span><button class="mo-x" id="mc-x">×</button></div><div class="mo-body"><div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:14px">受付する事業を選択してください</div><div class="div-sel-row"><button class="div-sel-btn" id="sel-div-bp"><div class="ds-ico">🔧</div><div class="ds-nm" style="color:var(--bp)">BP事業</div><div class="ds-sub">板金・ボディリペア</div></button><button class="div-sel-btn" id="sel-div-hp"><div class="ds-ico">🔩</div><div class="ds-nm" style="color:var(--hp)">HP事業</div><div class="ds-sub">車検・定点・一般整備</div></button></div></div><div class="mo-ft"><button class="btn btn-n" id="mc-x2">キャンセル</button></div></div></div>`;
-  }
-  const isHP=selDiv==='hp';
-  const templates=getTemplatesForDiv(selDiv);
-  const tmplOpts=Object.entries(templates).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
-  const customerOpts=(STATE.customers||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  const workerOpts=getUsersForDiv(selDiv).filter(u=>['worker','inspector','driver'].includes(u.role)).map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
-  const frontOpts=getUsersForDiv(selDiv).filter(u=>['admin','manager','front'].includes(u.role)).map(u=>`<option value="${u.id}" ${u.id===user.id?'selected':''}>${u.name}</option>`).join('');
-  return `<div class="mbk" id="mbk"><div class="mo"><div class="mo-hdr"><span class="mo-ttl">${divTag(selDiv)} 受付登録</span><button class="mo-x" id="mc-x">×</button></div><div class="mo-body"><div id="nj-err"></div><div class="fg"><label class="flbl">顧客検索</label><select class="fi" id="nj-customer-id"><option value="">新規顧客</option>${customerOpts}</select></div><div class="fg"><label class="flbl">顧客名 ★必須</label><input class="fi" id="nj-c" value="${qr?qr.owner:''}"></div><div class="fg"><label class="flbl">車両選択</label><select class="fi" id="nj-vehicle-id"><option value="">新規車両</option></select></div><div class="fg"><label class="flbl">車両名 ★必須</label><input class="fi" id="nj-v" value="${qr?`${qr.maker} ${qr.model}　${qr.plate}`:''}"></div><div class="fg"><label class="flbl">登録番号</label><input class="fi" id="nj-plate" value="${qr?qr.plate:''}"></div><div class="fg"><label class="flbl">元請 ★必須</label><select class="fi" id="nj-up">${getUpstreamOptions().map(v=>`<option value="${v}" ${v==='自受け'?'selected':''}>${v}</option>`).join('')}</select></div><div class="fg"><label class="flbl">工程テンプレート</label><select class="fi" id="nj-t">${tmplOpts}</select><div id="tmpl-st" class="dim" style="margin-top:4px"></div></div><div class="fg"><label class="flbl">作業者</label><select class="fi" id="nj-worker"><option value="">未確定</option>${workerOpts}</select></div><div class="fg"><label class="flbl">担当フロント</label><select class="fi" id="nj-f">${frontOpts}</select></div><div class="fg"><label class="flbl">受付予定日時</label><input type="datetime-local" class="fi" id="nj-reception" value="${addDT(0,9,0)}"></div><div class="fg"><label class="flbl">引取予定日時</label><input type="datetime-local" class="fi" id="nj-pickup" value="${addDT(0,9,0)}"></div><div class="fg"><label class="flbl">作業日</label><input type="datetime-local" class="fi" id="nj-work" value="${addDT(0,10,0)}"></div><div class="fg"><label class="flbl">完了予定日時</label><input type="datetime-local" class="fi" id="nj-completion" value="${addDT(isHP?1:3,16,0)}"></div><div class="fg"><label class="flbl">納車予定日時</label><input type="datetime-local" class="fi" id="nj-delivery" value="${addDT(isHP?1:3,18,0)}"></div><div class="fg"><label class="flbl">約束納車日</label><input type="date" class="fi" id="nj-d" value="${addD(today,isHP?1:7)}"><div class="dsc">${isHP?`<button class="ds" data-dsc3="${addD(today,0)}">当日</button><button class="ds" data-dsc3="${addD(today,1)}">明日</button><button class="ds" data-dsc3="${addD(today,2)}">明後日</button>`:`<button class="ds" data-dsc3="${addD(today,2)}">2日後</button><button class="ds" data-dsc3="${addD(today,7)}">1週間後</button><button class="ds" data-dsc3="${addD(today,14)}">2週間後</button>`}</div></div><div class="fg"><label class="flbl">見積金額（円）</label><input type="number" class="fi" id="nj-e" placeholder="${isHP?'50000':'150000'}"></div></div><div class="mo-ft"><button class="btn btn-n" id="mc-x2">キャンセル</button><button class="btn btn-n btn-sm" id="nj-back" style="margin-right:auto">◀ 事業選択へ戻る</button><button class="btn ${isHP?'btn-hp':'btn-p'}" id="nj-save">案件を登録する</button></div></div></div>`;
-}
-
-// ── CONFLICT ──────────────────────────────────────────
-function mConflict(){
-  const {conflictData:cd}=STATE;if(!cd)return'';
-  const st=STAGES.find(s=>s.id===cd.task.stageId);
-  return`<div class="mbk" id="mbk">
-  <div class="mo" style="max-width:560px">
-    <div class="mo-hdr">
-      <span class="mo-ttl" style="color:var(--red)">⚠️ 更新競合 (HTTP 409)</span>
-      <button class="mo-x" id="mc-x">×</button>
-    </div>
-    <div class="mo-body">
-      <div class="cf-box">
-        <div class="cf-ttl">🔒 楽観ロック競合を検知</div>
-        <div style="font-size:12.5px;color:var(--txt2)">別端末が先に「${st?.name}」を更新しました。</div>
-        <div class="cf-grid">
-          <div class="cf-col"><div class="cf-cl">サーバー現在値</div>
-            <div style="font-weight:700;color:var(--grn)">${ST_LABELS[cd.task.status]}</div>
-          </div>
-          <div class="cf-col"><div class="cf-cl">あなたの変更</div>
-            <div style="font-weight:700;color:var(--ylw)">${ST_LABELS[cd.attempted.status||cd.task.status]}</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-n" id="cf-reload">🔄 再読み込みして最新を確認<span style="margin-left:auto;font-size:11px;color:var(--grn)">推奨</span></button>
-        <button class="btn btn-y" id="cf-force">⚡ 自分の変更で上書き保存<span style="margin-left:auto;font-size:11px;color:var(--red)">要注意</span></button>
-        <button class="btn btn-n" id="cf-cancel">✖ キャンセル</button>
-      </div>
-    </div>
-  </div>
-</div>`;
-}
-
-// ============================================================
-// BIND ALL
-// ============================================================
-function bindAll(){
-  const close=()=>setState({modal:null,selectedJob:null,selectedTask:null,conflictData:null,jobDetailTab:'flow'});
-  const closeSidebar=()=>{if(isCompactViewport()&&STATE.sidebarOpen)setState({sidebarOpen:false});};
-
-  document.getElementById('sb-toggle')?.addEventListener('click',()=>setState({sidebarOpen:!STATE.sidebarOpen}));
-  document.getElementById('sb-backdrop')?.addEventListener('click',()=>setState({sidebarOpen:false}));
-  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setState({view:b.dataset.view,listFilter:'all',masterTab:'stages',sidebarOpen:isCompactViewport()?false:STATE.sidebarOpen})));
-  window.onresize=()=>{if(!isCompactViewport()&&STATE.sidebarOpen)setState({sidebarOpen:false});};
-  document.getElementById('logout')?.addEventListener('click',()=>setState({user:null,view:'myview',sidebarOpen:false}));
-
-  document.getElementById('kb-tog-scroll')?.addEventListener('click',()=>setState({kanbanMode:'scroll'}));
-  document.getElementById('kb-tog-fit')?.addEventListener('click',()=>setState({kanbanMode:'fit'}));
-
-  const openQR=()=>setState({modal:'qr',qrScanned:null});
-  document.getElementById('qr-btn')?.addEventListener('click',openQR);
-  document.getElementById('qr-btn-cust')?.addEventListener('click',openQR);
-
-  document.querySelectorAll('[data-ojob]').forEach(el=>el.addEventListener('click',()=>{
-    const j=STATE.jobs.find(j=>j.id===el.dataset.ojob);
-    if(j)setState({selectedJob:j,modal:'jobDetail',jobDetailTab:'flow'});
-  }));
-  document.querySelectorAll('[data-otask]').forEach(el=>el.addEventListener('click',e=>{
-    e.stopPropagation();
-    const [jid,tid]=el.dataset.otask.split('__');
-    const j=STATE.jobs.find(j=>j.id===jid);const t=j?.tasks.find(t=>t.id===tid);
-    if(j&&t)setState({selectedJob:j,selectedTask:t,modal:'task'});
-  }));
-  document.querySelectorAll('[data-qdone]').forEach(el=>el.addEventListener('click',e=>{
-    e.stopPropagation();
-    const [jid,tid]=el.dataset.qdone.split('__');
-    const j=STATE.jobs.find(j=>j.id===jid);const t=j?.tasks.find(t=>t.id===tid);
-    if(!j||!t)return;
-    if(updateTask(jid,tid,{status:'completed',completedAt:new Date().toISOString()},t.version))showToast('工程を完了しました');
-  }));
-  document.querySelectorAll('[data-qhold]').forEach(el=>el.addEventListener('click',e=>{
-    e.stopPropagation();
-    const [jid,tid]=el.dataset.qhold.split('__');
-    const j=STATE.jobs.find(j=>j.id===jid);const t=j?.tasks.find(t=>t.id===tid);
-    if(j&&t)setState({selectedJob:j,selectedTask:t,modal:'task'});
+// ── ACTIONS ─────────────────────────────────
+function bindEvents(){
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setState({view:b.dataset.view})));
+  document.getElementById('btn-new')?.addEventListener('click',()=>setState({modal:'newJob',newDiv:STATE.view.includes('hp')?'hp':'bp'}));
+  
+  // Job detail open
+  document.querySelectorAll('[data-ojob]').forEach(el=>el.addEventListener('click',(e)=>{
+    if(e.target.closest('.kb-card')) return; // ignore drag wrapper click if any
+    const j=STATE.jobs.find(x=>x.id===el.dataset.ojob);
+    if(j) setState({modal:'jobDetail',selectedJob:j});
   }));
 
-  document.querySelectorAll('[data-fl]').forEach(b=>b.addEventListener('click',()=>setState({listFilter:b.dataset.fl})));
-  document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>setState({listPeriod:b.dataset.period})));
-  document.querySelectorAll('[data-dash-period]').forEach(b=>b.addEventListener('click',()=>setState({dashboardPeriod:b.dataset.dashPeriod})));
-  document.querySelectorAll('[data-listdiv]').forEach(b=>b.addEventListener('click',()=>setState({listDiv:b.dataset.listdiv})));
-  document.getElementById('list-upstream')?.addEventListener('change',e=>setState({listUpstream:e.target.value}));
-  document.getElementById('list-sort')?.addEventListener('change',e=>setState({listSort:e.target.value}));
-  document.getElementById('cust-upstream')?.addEventListener('change',e=>setState({customerUpstream:e.target.value}));
-  document.getElementById('list-date-from')?.addEventListener('change',e=>setState({listPeriod:'custom',listDateFrom:e.target.value}));
-  document.getElementById('list-date-to')?.addEventListener('change',e=>setState({listPeriod:'custom',listDateTo:e.target.value}));
-
-  document.getElementById('new-job-btn')?.addEventListener('click',()=>{
-    const canAuto=STATE.user?.div!=='all'&&STATE.user?.role!=='admin';
-    setState({modal:'newJob',newJobDiv:canAuto?STATE.user.div:null});
-  });
-  document.getElementById('transfer-print-btn')?.addEventListener('click',openTransferPrintWindow);
-
-  document.querySelectorAll('[data-stage-col]').forEach(col=>{
-    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('kb-drop-target');});
-    col.addEventListener('dragleave',()=>col.classList.remove('kb-drop-target'));
-    col.addEventListener('drop',e=>{e.preventDefault();col.classList.remove('kb-drop-target');const raw=e.dataTransfer.getData('text/plain'); if(!raw)return; const [jid,tid]=raw.split('__'); const j=STATE.jobs.find(x=>x.id===jid); const t=j?.tasks.find(x=>x.id===tid); if(!j||!t)return; const targetStage=col.dataset.stageCol; if(t.stageId===targetStage){setState({selectedJob:j,selectedTask:t,modal:'task',dragMoveContext:{from:t.stageId,to:targetStage}});return;} const updatedTasks=j.tasks.map(x=>x.id===tid?{...x,stageId:targetStage,status:'pending'}:x); const jobs=STATE.jobs.map(x=>x.id===jid?{...x,tasks:updatedTasks}:x); const j2=jobs.find(x=>x.id===jid); const t2=j2.tasks.find(x=>x.id===tid); setState({jobs,selectedJob:j2,selectedTask:t2,modal:'task',dragMoveContext:{from:t.stageId,to:targetStage}}); });
-  });
-  document.querySelectorAll('[data-transfer-col]').forEach(col=>{
-    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('kb-drop-target');});
-    col.addEventListener('dragleave',()=>col.classList.remove('kb-drop-target'));
-  });
-  document.querySelectorAll('[draggable="true"]').forEach(card=>{
-    card.addEventListener('dragstart',e=>{card.classList.add('dragging');e.dataTransfer.setData('text/plain',card.dataset.otask);});
-    card.addEventListener('dragend',()=>card.classList.remove('dragging'));
-  });
-
-  document.querySelectorAll('[data-mtab]').forEach(b=>b.addEventListener('click',()=>setState({masterTab:b.dataset.mtab})));
-  document.querySelectorAll('[data-mdiv]').forEach(b=>b.addEventListener('click',()=>setState({masterDiv:b.dataset.mdiv,masterTab:'stages'})));
-
-  // WIP
-  document.getElementById('wip-save-btn')?.addEventListener('click',()=>{
-    const next={...getWipLimits(STATE.masterDiv)};
-    let hasError=false;
-    document.querySelectorAll('[data-wip-input]').forEach(input=>{
-      const val=parseInt(input.value,10);
-      if(Number.isNaN(val)||val<1){input.style.borderColor='var(--red)';hasError=true;return;}
-      input.style.borderColor='';next[input.dataset.wipInput]=val;
+  // PDF Print Logic
+  document.getElementById('btn-print-pd')?.addEventListener('click',()=>{
+    const targets=STATE.jobs.filter(j=>j.tasks.some(t=>['pickup','delivery'].includes(STAGES.find(s=>s.id===t.stageId)?.code) && t.status!=='completed'));
+    // 元請けソート
+    targets.sort((a,b)=>(a.upstream||'').localeCompare(b.upstream||''));
+    
+    let html = `<h2>🚗 引取・納車リスト (${isoDate(today)})</h2><table border="1" style="width:100%;border-collapse:collapse;font-size:12px;text-align:left">
+      <tr><th>元請け</th><th>顧客</th><th>車両/ナンバー</th><th>区分</th><th>予定日時</th></tr>`;
+    targets.forEach(j=>{
+      const t = j.tasks.find(t=>['pickup','delivery'].includes(STAGES.find(s=>s.id===t.stageId)?.code));
+      const code = STAGES.find(s=>s.id===t.stageId)?.code;
+      const d = code==='pickup'?j.promisedPickup:j.promisedDelivery;
+      html += `<tr><td>${j.upstream}</td><td>${j.customerName}</td><td>${j.vehicleName}</td><td>${code==='pickup'?'引取':'納車'}</td><td>${fmtD(d)}</td></tr>`;
     });
-    if(hasError){showToast('WIP上限は1以上の整数で入力してください','e');return;}
-    const patch=STATE.masterDiv==='hp'?{hpWipLimits:next}:{bpWipLimits:next};
-    setState({...patch,masterTab:'wip'});
-    showToast('WIP上限を更新しました');
+    html += `</table>`;
+    
+    const printWindow = window.open('','_blank');
+    printWindow.document.write(`<html><head><title>引取納車リスト</title><style>body{font-family:sans-serif;padding:20px} th,td{padding:8px}</style></head><body>${html}</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(()=>printWindow.print(), 500);
   });
-  document.getElementById('wip-reset-btn')?.addEventListener('click',()=>{
-    const patch=STATE.masterDiv==='hp'?{hpWipLimits:{...DEFAULT_HP_WIP}}:{bpWipLimits:{...DEFAULT_BP_WIP}};
-    setState({...patch,masterTab:'wip'});
-    showToast('WIP上限を初期値に戻しました','i');
-  });
-
-  // KPI
-  document.getElementById('kpi-save-btn')?.addEventListener('click',()=>{
-    const targets=STATE.masterDiv==='hp'?STATE.hpKpiTargets:STATE.bpKpiTargets;
-    const next=(targets||[]).map((row,idx)=>({
-      ...row,
-      salesTarget:parseInt(document.querySelector(`[data-kpi-sales="${idx}"]`)?.value||0,10)||0,
-      profitTarget:parseInt(document.querySelector(`[data-kpi-profit="${idx}"]`)?.value||0,10)||0,
-      countTarget:parseInt(document.querySelector(`[data-kpi-count="${idx}"]`)?.value||0,10)||0,
-    }));
-    const patch=STATE.masterDiv==='hp'?{hpKpiTargets:next}:{bpKpiTargets:next};
-    setState({...patch,masterTab:'kpi'});
-    showToast('KPI目標を更新しました');
-  });
-  document.getElementById('kpi-reset-btn')?.addEventListener('click',()=>{
-    const patch=STATE.masterDiv==='hp'
-      ?{hpKpiTargets:buildDefaultKpiTargets('hp')}
-      :{bpKpiTargets:buildDefaultKpiTargets('bp')};
-    setState({...patch,masterTab:'kpi'});
-    showToast('KPI目標を初期値に戻しました','i');
-  });
-
-  // Upstream
-  document.getElementById('upstream-save-btn')?.addEventListener('click',()=>{
-    const vals=[...document.querySelectorAll('[data-upstream-input]')].map((i,idx)=>({
-      name:i.value.trim(),color:document.querySelector(`[data-upstream-color="${idx}"]`)?.value||'#1d4ed8'
-    })).filter(v=>v.name);
-    const extra=document.getElementById('upstream-new')?.value.trim();
-    const extraColor=document.getElementById('upstream-new-color')?.value||'#1d4ed8';
-    if(extra)vals.push({name:extra,color:extraColor});
-    const seen=new Set();
-    const unique=vals.filter(v=>{if(seen.has(v.name))return false;seen.add(v.name);return true;});
-    if(unique.length===0){showToast('元受けを1件以上入力してください','e');return;}
-    setState({upstreams:unique,masterTab:'upstreams'});
-    showToast('元受けマスタを更新しました');
-  });
-  document.getElementById('upstream-reset-btn')?.addEventListener('click',()=>{
-    setState({upstreams:JSON.parse(JSON.stringify(DEFAULT_UPSTREAMS)),masterTab:'upstreams'});
-    showToast('元受けマスタを初期値に戻しました','i');
-  });
-
-  // Users
-  document.getElementById('user-save-btn')?.addEventListener('click',()=>{
-    if(!['admin','manager'].includes(STATE.user?.role)){showToast('ユーザー権限を変更できません','e');return;}
-    const next=getUsers().map((u,idx)=>({...u,role:document.querySelector(`[data-user-role="${idx}"]`)?.value||u.role}));
-    const current=STATE.user?next.find(u=>u.id===STATE.user.id):null;
-    setState({users:next,user:current||STATE.user,masterTab:'users'});
-    showToast('ユーザー権限を更新しました');
-  });
-
-  // MODAL CLOSE
-  document.getElementById('mc-x')?.addEventListener('click',close);
-  document.getElementById('mc-x2')?.addEventListener('click',close);
-  document.getElementById('mbk')?.addEventListener('click',e=>{if(e.target.id==='mbk')close();});
-
-  // QR MODAL
-  if(STATE.modal==='qr'){
-    document.querySelectorAll('[data-qr-idx]').forEach(b=>b.addEventListener('click',()=>{
-      const v=QR_DEMO_VEHICLES[parseInt(b.dataset.qrIdx)];
-      setState({qrScanned:v,modal:'qr'});
-      showToast(`${v.plate} を読み取りました`,'i');
-    }));
-    document.getElementById('qr-to-job')?.addEventListener('click',()=>{
-      const u=STATE.user;
-      const div=u.div==='all'||u.role==='admin'?null:u.div;
-      setState({modal:'newJob',newJobDiv:div});
-    });
-    document.getElementById('qr-rescan')?.addEventListener('click',()=>setState({qrScanned:null,modal:'qr'}));
-  }
-
-  // DIV SELECT (new job pre-screen)
-  document.getElementById('sel-div-bp')?.addEventListener('click',()=>setState({modal:'newJob',newJobDiv:'bp'}));
-  document.getElementById('sel-div-hp')?.addEventListener('click',()=>setState({modal:'newJob',newJobDiv:'hp'}));
-  document.getElementById('nj-back')?.addEventListener('click',()=>setState({modal:'newJob',newJobDiv:null}));
-
-  // TASK MODAL
-  if(STATE.modal==='task'){
-    const j=STATE.selectedJob,t=STATE.selectedTask;
-    if(!j||!t)return;
-    let curSt=t.status;
-    const hl=()=>{
-      document.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('sel',b.dataset.sst===curSt));
-      const hb=document.getElementById('hold-block');
-      if(hb)hb.style.display=curSt==='hold'?'block':'none';
-    };
-    hl();
-    document.querySelectorAll('[data-sst]').forEach(b=>b.addEventListener('click',()=>{curSt=b.dataset.sst;hl();}));
-    document.querySelectorAll('[data-dsc]').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('eta-in');if(i)i.value=b.dataset.dsc;}));
-    document.getElementById('insp-ok')?.addEventListener('click',()=>{curSt='completed';hl();document.getElementById('ng-block').style.display='none';});
-    document.getElementById('insp-ng')?.addEventListener('click',()=>{curSt='hold';hl();document.getElementById('ng-block').style.display='block';});
-    document.getElementById('t-save')?.addEventListener('click',()=>{
-      const err=document.getElementById('mo-err');
-      if(curSt==='hold'&&!document.getElementById('hr-sel').value){
-        err.innerHTML='<div class="alert danger">⚠️ 保留理由を選択してください</div>';return;
-      }
-      const stage=STAGES.find(s=>s.id===t.stageId);
-      if((stage?.code==='inspection'||stage?.code==='shaken_insp'||stage?.code==='quality_check')&&curSt==='hold'&&!document.getElementById('ng-sel')?.value){
-        err.innerHTML='<div class="alert danger">⚠️ NG理由を選択してください</div>';return;
-      }
-      const changes={
-        status:curSt,
-        assigneeId:document.getElementById('ass-sel')?.value||null,
-        finishEta:document.getElementById('eta-in')?.value||null,
-        note:document.getElementById('t-note')?.value||'',
-        completedAt:curSt==='completed'?new Date().toISOString():null,
-      };
-      if(!canEdit(STATE.user,t,j)){err.innerHTML='<div class="alert danger">⚠️ この工程を変更する権限がありません</div>';return;}
-      const ok=updateTask(j.id,t.id,changes,t.version);
-      if(ok){
-        if(changes.assigneeId) updateJob(j.id,{assignedWorkerId:changes.assigneeId});
-        setState({modal:null,selectedJob:null,selectedTask:null,dragMoveContext:null});showToast('工程を更新しました');
-      }
-    });
-  }
-
-  // JOB DETAIL TABS
-  if(STATE.modal==='jobDetail'){
-    document.querySelectorAll('[data-jdtab]').forEach(b=>b.addEventListener('click',()=>setState({jobDetailTab:b.dataset.jdtab,selectedJob:STATE.selectedJob})));
-    document.querySelectorAll('[data-otask]').forEach(el=>el.addEventListener('click',e=>{
-      e.stopPropagation();
-      const [jid,tid]=el.dataset.otask.split('__');
-      const j2=STATE.jobs.find(j=>j.id===jid);const t2=j2?.tasks.find(t=>t.id===tid);
-      if(j2&&t2)setState({selectedJob:j2,selectedTask:t2,modal:'task'});
-    }));
-    document.getElementById('jf-save')?.addEventListener('click',()=>{
-      const j2=STATE.selectedJob;if(!j2)return;
-      updateJob(j2.id,{
-        estimateAmount:parseInt(document.getElementById('jf-sales')?.value||0,10)||0,
-        estimatePartsCost:parseInt(document.getElementById('jf-parts')?.value||0,10)||0,
-        estimateLaborCost:parseInt(document.getElementById('jf-labor')?.value||0,10)||0,
-        settlementDate:document.getElementById('jf-settlement')?.value||j2.settlementDate,
-      });
-      showToast('収益情報を更新しました');
-    });
-    document.getElementById('ji-save')?.addEventListener('click',()=>{
-      const j2=STATE.selectedJob;if(!j2)return;
-      const promised=document.getElementById('ji-promised')?.value||j2.promisedDelivery;
-      updateJob(j2.id,{
-        customerName:document.getElementById('ji-customer')?.value?.trim()||j2.customerName,
-        upstream:document.getElementById('ji-upstream')?.value||j2.upstream,
-        vehicleName:document.getElementById('ji-vehicle')?.value?.trim()||j2.vehicleName,
-        priority:document.getElementById('ji-priority')?.value||j2.priority,
-        promisedDelivery:promised,
-        internalDeadline:document.getElementById('ji-deadline')?.value||j2.internalDeadline||addD(promised,-1),
-        frontOwnerId:document.getElementById('ji-front')?.value||j2.frontOwnerId,
-        assignedWorkerId:document.getElementById('ji-worker')?.value||null,
-        pickupPlannedAt:document.getElementById('ji-pickup')?.value||j2.pickupPlannedAt,
-        receptionPlannedAt:document.getElementById('ji-reception')?.value||j2.receptionPlannedAt,
-        workPlannedAt:document.getElementById('ji-work')?.value||j2.workPlannedAt,
-        completionPlannedAt:document.getElementById('ji-completion')?.value||j2.completionPlannedAt,
-        deliveryPlannedAt:document.getElementById('ji-delivery')?.value||j2.deliveryPlannedAt,
-        note:document.getElementById('ji-note')?.value||''
-      });
-      showToast('案件情報を更新しました');
-    });
-  }
-
-  // NEW JOB
-  if(STATE.modal==='newJob'&&STATE.newJobDiv){
-    const div=STATE.newJobDiv;
-    const showTmpl=()=>{
-      const k=document.getElementById('nj-t')?.value;
-      const tmpl=getTemplatesForDiv(div)[k];
-      const el=document.getElementById('tmpl-st');
-      if(el&&tmpl)el.textContent=tmpl.stages.map(id=>STAGES.find(s=>s.id===id)?.name).join(' → ');
-    };
-    const syncVehicles=()=>{
-      const cid=document.getElementById('nj-customer-id')?.value;
-      const sel=document.getElementById('nj-vehicle-id');
-      if(!sel)return;
-      const vehicles=cid?getVehiclesByCustomer(cid):[];
-      sel.innerHTML='<option value="">新規車両</option>'+vehicles.map(v=>`<option value="${v.id}">${v.vehicleName}</option>`).join('');
-      const c=getCustomerById(cid); if(c) document.getElementById('nj-c').value=c.name;
-    };
-    document.getElementById('nj-customer-id')?.addEventListener('change',syncVehicles);
-    document.getElementById('nj-vehicle-id')?.addEventListener('change',()=>{
-      const v=getVehicleById(document.getElementById('nj-vehicle-id')?.value); if(!v)return;
-      document.getElementById('nj-v').value=v.vehicleName; document.getElementById('nj-plate').value=v.plateNumber||'';
-    });
-    document.getElementById('nj-t')?.addEventListener('change',showTmpl); showTmpl(); syncVehicles();
-    document.querySelectorAll('[data-dsc3]').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('nj-d');if(i)i.value=b.dataset.dsc3;}));
-    document.getElementById('nj-save')?.addEventListener('click',()=>{
-      const c=document.getElementById('nj-c').value.trim();
-      const v=document.getElementById('nj-v').value.trim();
-      if(!c||!v){document.getElementById('nj-err').innerHTML='<div class="alert danger">⚠️ 顧客名と車両を入力してください</div>';return;}
-      const tk=document.getElementById('nj-t').value;
-      const tmpl=getTemplatesForDiv(div)[tk];
-      const del=document.getElementById('nj-d').value;
-      const est=parseInt(document.getElementById('nj-e').value)||0;
-      const upstream=document.getElementById('nj-up').value;
-      const frontId=document.getElementById('nj-f').value;
-      const workerId=document.getElementById('nj-worker').value||null;
-      const prefix=div==='hp'?'h':'j'; const newId=prefix+Date.now();
-      const count=STATE.jobs.filter(j=>j.div===div).length; const num=String((div==='hp'?30000:20000)+count+1);
-      const tasks=tmpl.stages.map((sid,i)=>({id:`${newId}_t${i}`,jobId:newId,stageId:sid,sequence:i,status:'pending',assigneeId:workerId,finishEta:addD(today,i+1),reworkCount:0,note:'',version:1,completedAt:null}));
-      const created=normalizeJob({id:newId,jobNumber:`#${num}`,customerName:c,vehicleName:v,plateNumber:document.getElementById('nj-plate').value.trim(),upstream,priority:'normal',div,subType:div==='hp'?tk:null,entryDate:isoDate(today),promisedDelivery:del,settlementDate:del,frontOwnerId:frontId,createdBy:STATE.user?.id||frontId,internalDeadline:addD(del,-1),estimateAmount:est,estimatePartsCost:Math.floor(est*.22),estimateLaborCost:Math.floor(est*(div==='hp'?0.25:0.2)),actualAmount:null,settlementStatus:'unsettled',status:'open',note:'',tasks,assignedWorkerId:workerId,receptionPlannedAt:document.getElementById('nj-reception').value,pickupPlannedAt:document.getElementById('nj-pickup').value,workPlannedAt:document.getElementById('nj-work').value,completionPlannedAt:document.getElementById('nj-completion').value,deliveryPlannedAt:document.getElementById('nj-delivery').value});
-      const synced=syncMastersFromJob(created);
-      setState({jobs:[synced.job,...STATE.jobs],customers:synced.customers,vehicles:synced.vehicles,modal:null,qrScanned:null,newJobDiv:null});
-      showToast(`案件 #${num} を登録しました（${div==='hp'?'HP':'BP'}）`);
-    });
-  }
-
-  // CONFLICT
-  if(STATE.modal==='conflict'){
-    document.getElementById('cf-reload')?.addEventListener('click',()=>{
-      setState({modal:null,conflictData:null,selectedJob:null,selectedTask:null});
-      showToast('最新データに更新しました','i');
-    });
-    document.getElementById('cf-force')?.addEventListener('click',()=>{
-      const {conflictData:cd,selectedJob:j,selectedTask:t}=STATE;
-      if(!cd||!j||!t)return;
-      const jobs=STATE.jobs.map(jb=>{
-        if(jb.id!==j.id)return jb;
-        return{...jb,tasks:jb.tasks.map(tk=>{
-          if(tk.id!==t.id)return tk;
-          return{...tk,...cd.attempted,version:tk.version+1};
-        })};
-      });
-      setState({jobs,modal:null,conflictData:null,selectedJob:null,selectedTask:null});
-      showToast('上書き保存しました','i');
-    });
-    document.getElementById('cf-cancel')?.addEventListener('click',()=>
-      setState({modal:null,conflictData:null,selectedJob:null,selectedTask:null}));
-  }
 }
 
-// ============================================================
-// BOOT
-// ============================================================
+function saveNewJob(){
+  const cid=document.getElementById('nj-cust').value;
+  const cname=cid?CUSTOMERS_DB.find(c=>c.id===cid).name:'新規顧客';
+  const veh=document.getElementById('nj-veh').value||'新規車両';
+  const up=document.getElementById('nj-up').value;
+  const ass=document.getElementById('nj-ass').value;
+  const pk=document.getElementById('nj-pickup').value;
+  const dl=document.getElementById('nj-deliv').value;
+  
+  const div=STATE.newDiv;
+  const stages=div==='bp'?BP_STAGES:HP_STAGES;
+  const tasks=stages.map(s=>({id:`n_${Date.now()}_${s.id}`,stageId:s.id,status:'pending',assigneeId:ass,completedAt:null}));
+  
+  STATE.jobs.push({
+    id:`j${Date.now()}`,jobNumber:`#${div==='hp'?'3':'2'}0099`,customerName:cname,vehicleName:veh,div,priority:'normal',
+    upstream:up,entryDate:isoDate(today),promisedPickup:pk,promisedDelivery:dl,tasks
+  });
+  setState({modal:null});
+  showToast('受付を登録しました');
+}
+
+// Boot
+initData();
 render();
 </script>
 </body>

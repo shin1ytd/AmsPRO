@@ -1,0 +1,15 @@
+{
+  "name": "ams-pro",
+  "version": "5.2.0",
+  "description": "NTA工程管理システム Ams PRO - ローカルLANサーバー版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "node seed_prod.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
